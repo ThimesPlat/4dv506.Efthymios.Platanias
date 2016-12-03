@@ -11,5 +11,10 @@ public class VarRecord extends Record {
 	}
 	
 	public String getType(){return type;}
+	
+	@Override
+	public String toString(){
+		return name+" "+type;
+	}
 
 }

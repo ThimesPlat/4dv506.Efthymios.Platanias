@@ -15,5 +15,11 @@ public class MethodRecord extends Record {
 	
 	public String getType() {return type;}
 	
+	public String toString(){
+		String result= "Method: "+name+" "+type+"\nVariables:";
+		for(VarRecord v: variables) result+="\n\t"+v.toString();
+		return result;
+	}
+	
 
 }

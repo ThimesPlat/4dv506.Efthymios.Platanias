@@ -47,5 +47,26 @@ public class Scope {
 		for (int i = 0; i < children.size(); i++)
 			(children.get(i)).resetScope();
 	}
+	
+	public Scope getParent() {
+		return parent;
+	}
+
+	public void put(String key, Record item) {
+		records.put(key, item);
+		
+	}
+
+	public void printScope() {
+		System.out.println("Scope: "+ this.getClass().getName());
+		System.out.println("parent: "+ this.getParent().getClass().getName());
+		System.out.println("Children: "+ this.children.size());
+		System.out.println("Records:");
+		for(String key: records.keySet()){
+			System.out.println(records.get(key).toString());
+		}
+	}
+	
+	
 
 }

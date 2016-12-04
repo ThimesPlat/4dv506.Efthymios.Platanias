@@ -1,16 +1,28 @@
 package efthymios.platanias;
 
-public abstract class Record {
+public class Record {
+	String name;
+	String Type;
 	
-	protected String name;
-	
-
-		
-	public Record(String n) {
-		name=n;
-		
+	public Record(String name, String Type){
+		this.name = name;
+		this.Type = Type;
 	}
 	
-	public String getName() {return name;}
-		
+	public String getReturnType() {
+		return Type;
+	}
+	public void setReturnType(String returnType) {
+		this.Type = returnType;
+	}
+
+	public String getName() {
+		return name;
+	}
+	
+	@Override
+	public String toString(){
+		return Type+" "+name;
+	}
+	
 }

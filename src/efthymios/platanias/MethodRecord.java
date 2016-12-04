@@ -1,25 +1,27 @@
 package efthymios.platanias;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MethodRecord extends Record {
+public class MethodRecord extends Record{
+	Map<String,Record> variables = new HashMap<String,Record>();
 	
-	private String type;
-	public HashSet<VarRecord> variables;
-
-	public MethodRecord(String n, String t) {
-		super(n);
-		type=t;
-		variables= new HashSet<VarRecord>();
+	public MethodRecord(String name, String returnType){
+		super(name, returnType);	
 	}
 	
-	public String getType() {return type;}
+	public Record getVariables(String name) {
+		return variables.get(name);
+	}
+
+	public void setVariables(String name, Record variable) {
+		variables.put(name, variable);
+	}
 	
 	public String toString(){
-		String result= "Method: "+name+" "+type+"\nVariables:";
-		for(VarRecord v: variables) result+="\n\t"+v.toString();
+		String result= "Method: "+Type+" "+name+"\nVariables:";
+		for(Map.Entry<String, Record> v: variables.entrySet()) 
+			result+="\n\t"+v.getValue().toString();
 		return result;
 	}
-	
-
 }

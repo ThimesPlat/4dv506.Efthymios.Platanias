@@ -1,7 +1,7 @@
 package efthymios.platanias;
 
-public class SymbolTable {
 
+public class SymbolTable {
 	private Scope root;      //Root of scope tree
 	private Scope current;   //Current scope
 
@@ -9,6 +9,7 @@ public class SymbolTable {
 		root = new Scope(null); 
 		current = root; 
 	}
+	
 	public void enterScope() { 
 		current = current.nextChild();
 	}
@@ -31,5 +32,4 @@ public class SymbolTable {
 	public Scope getCurrentScope(){
 		return current;
 	}
-
 }

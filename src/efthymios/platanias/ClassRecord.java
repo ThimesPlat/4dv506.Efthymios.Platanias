@@ -1,25 +1,42 @@
 package efthymios.platanias;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ClassRecord extends Record {
+public class ClassRecord extends Record{
 	
-	public HashSet<VarRecord> variables;
-	public HashSet<MethodRecord> methods;	
+	//Scope scope;
+	Map<String,Record> variables = new HashMap<String,Record>();
+	Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();
 	
-	
-	public ClassRecord(String n) {		
-		super(n);		
-		variables= new HashSet<VarRecord>();
-		methods= new HashSet<MethodRecord>(); 
+	public ClassRecord(String name, String returnType){
+		super(name, name);
 	}
 
+	public MethodRecord getMethods(String name) {
+		return methods.get(name);
+	}
+
+	public void setMethods(String name, MethodRecord method) {
+		methods.put(name, method);
+	}
+
+	public Record getVariable(String Varname) {
+		return variables.get(Varname);
+	}
+
+	public void setVariables(Map<String, Record> variables) {
+		this.variables = variables;
+	}
+	
 	@Override
 	public String toString(){
 		String result= "Class "+ this.name +"\nVariables: \n";
-		for(VarRecord v: variables) result+=v.toString()+ "\n" ;
+		for(Map.Entry<String, Record> v: variables.entrySet())
+			result+=v.getValue().toString()+ "\n" ;
 		result+="\nMethods:\n\t";
-		for(MethodRecord m: methods)result+=m.toString()+"\n\t";
+		for(Map.Entry<String,MethodRecord> m: methods.entrySet())
+			result+=m.toString()+"\n\t";
 		return result;
 	}
 }

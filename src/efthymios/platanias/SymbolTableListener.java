@@ -1,15 +1,15 @@
 package efthymios.platanias;
 
-import efthymios.platanias.MJGrammarBaseListener;
-import efthymios.platanias.MJGrammarParser.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
+
+import antlr.MJGrammarBaseListener;
+import antlr.MJGrammarParser.ClassDeclarationContext;
+import antlr.MJGrammarParser.MainClassContext;
+import antlr.MJGrammarParser.MethodContext;
+import antlr.MJGrammarParser.ProgContext;
  
 public class SymbolTableListener extends MJGrammarBaseListener {
  
@@ -85,11 +85,12 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	@Override
 	public void enterMethod(MethodContext ctx) {
 		 // System.out.println("enterMethod");
-		 // method : type ID LRB fieldDeclarationList RRB LB fieldList statementList (returnSt)?RB;
+		 // method : type ID LRB paramList RRB LB fieldList statementList (returnSt)?RB;
 	     MethodRecord methodRecord = new MethodRecord(ctx.getChild(1).getText(), ctx.getChild(0).getChild(0).getText());
-	     // fieldDeclarationList:   (type ID(','type ID)*)? ;
+	     // paramList:   (type ID(','type ID)*)? ;
 	     for (int i = 0; i < ctx.getChild(3).getChildCount(); i += 3) {
 	    	 Record rec = new Record(ctx.getChild(3).getChild(i + 1).getText(), ctx.getChild(3).getChild(i).getChild(0).getText());
+	    	 methodRecord.setParameter(ctx.getChild(3).getChild(i + 1).getText(),rec);
 	         //table.put(ctx.getChild(3).getChild(i + 1).getText(), rec);
 	         methodRecord.setVariables(ctx.getChild(3).getChild(i + 1).getText(),rec);
 	     }
@@ -104,7 +105,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	     System.out.println(methodRecord.toString());
 	     table.put(ctx.getChild(1).getText(), methodRecord);
 	     //Place the Methodrecord in the last classRecord 
-	     this.lastClassRecord.setMethods(ctx.getChild(1).getText(), methodRecord);
+	     this.lastClassRecord.setMethod(ctx.getChild(1).getText(), methodRecord);
 	     //Enter method scope (create new child of current scope)
 	     table.enterScope();
 	     //Get entered scope which was created and is current now

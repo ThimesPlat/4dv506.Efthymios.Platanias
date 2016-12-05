@@ -1,10 +1,12 @@
 package efthymios.platanias;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MethodRecord extends Record{
 	Map<String,Record> variables = new HashMap<String,Record>();
+	Map<String,Record> parameters = new HashMap<String,Record>();
 	
 	public MethodRecord(String name, String returnType){
 		super(name, returnType);	
@@ -23,5 +25,13 @@ public class MethodRecord extends Record{
 		for(Map.Entry<String, Record> v: variables.entrySet()) 
 			result+="\n\t"+v.getValue().toString();
 		return result;
+	}
+	
+	public Collection<Record> getParameters(){
+		return parameters.values();
+	}
+	
+	public void setParameter(String name, Record parameter) {
+		parameters.put(name, parameter);
 	}
 }

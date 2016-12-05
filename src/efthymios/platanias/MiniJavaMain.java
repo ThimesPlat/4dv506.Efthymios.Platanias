@@ -11,7 +11,7 @@ public class MiniJavaMain {
 
 	public static void main(String[] args) throws Exception {
 		
-		System.out.println("Reading test program from: "+args[0]);
+		System.out.println("Reading test program from: ");//+args[0]);
 		
 		try {
 			ANTLRFileStream input = new ANTLRFileStream("C:\\quicksort.java");//ANTLRFileStream(args[0]);

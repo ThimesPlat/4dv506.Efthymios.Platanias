@@ -32,7 +32,10 @@ argument:            	arg(','arg)*;
 arg					: 	ID|CH|STRING|expression|methodCall;						
 expression			:	 LRB expression RRB|ID|property|STRING|BOOLEANLIT|stringConcExpr
 						|initExpr|methodCall|arrIdExpr|boolExpr|arExpr;
-method				:	 type ID LRB (type ID(','type ID)*)? RRB LB fieldList (statement)* (returnSt)?RB;
+method				:	 type ID LRB paramList RRB LB fieldList statementList (returnSt)?RB;
+paramList			:   (type ID(','type ID)*)? ;
+statementList 		:	(statement)* ;
+
 methodCall			: 	(ID'.')*ID LRB (argument)?RRB
            				 |(LRB methodCall RRB)'.'methodCall
            				 |methodCall '.' methodCall;
@@ -71,7 +74,7 @@ NOT: '!';
 COMP:'<'('=')?|'>'('=')?;
 EQ: '=='|'!=';
 ID: ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
-D:('0'..'9');
+//D:('0'..'9');
 SC: ';';
 WS:[ \t\r\n]+ -> skip ;
 COMMENTL: ('//'~[\r\n]*)->skip;

@@ -13,11 +13,11 @@ public class ClassRecord extends Record{
 		super(name, name);
 	}
 
-	public MethodRecord getMethods(String name) {
+	public MethodRecord getMethod(String name) {
 		return methods.get(name);
 	}
 
-	public void setMethods(String name, MethodRecord method) {
+	public void setMethod(String name, MethodRecord method) {
 		methods.put(name, method);
 	}
 

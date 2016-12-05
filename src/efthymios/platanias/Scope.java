@@ -42,7 +42,7 @@ public class Scope {
 
 	public Record lookup(String name) {
 		if (records.containsKey(name))        //Check if in current scope
-			return (Record) records.get(name);
+			return records.get(name);
 		else {                               //Move to enclosing/parent scope
 			if (parent == null)
 				return null;                 // Identifier not in table

@@ -4,10 +4,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import antlr.MJGrammarBaseVisitor;
+import antlr.MJGrammarParser.ArrIdExprContext;
 import antlr.MJGrammarParser.BoolExprContext;
 import antlr.MJGrammarParser.ClassDeclarationContext;
 import antlr.MJGrammarParser.MethodContext;
 import antlr.MJGrammarParser.PrintStContext;
+import antlr.MJGrammarParser.PropertyContext;
 import antlr.MJGrammarParser.ReturnStContext;
 
 public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
@@ -50,7 +52,13 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null;
 	}
 	
-	
+	/*boolExpr			:	LRB boolExpr RRB
+							|arExpr COMP arExpr
+							|arExpr EQ arExpr 
+							|boolExpr (AND|OR)boolExpr
+							|NOT boolExpr
+							|(ID|property|BOOLEANLIT|arrIdExpr|methodCall) ;
+	*/
 	@Override
 	public String visitBoolExpr(BoolExprContext ctx) {
 		int childrenNo=ctx.children.size();
@@ -59,21 +67,21 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			ParseTree n=ctx.getChild(1);			
 			if (!(n instanceof TerminalNode)) return visit(n);    //( boolExpr ) 
 			else if(n == ctx.COMP()||n == ctx.EQ()) {
-				String firstOpType=visit(ctx.getChild(0));
-				String secondOpType=visit(ctx.getChild(2));
+				String firstOpType=visit(ctx.getChild(0));    //|arExpr COMP arExpr
+				String secondOpType=visit(ctx.getChild(2));   //|arExpr EQ arExpr
 				if(!(firstOpType=="int")&&(secondOpType=="int")) throw new RuntimeException("you can only compare integer types");
 				return "boolean";
-			}else if(n==ctx.AND()||n==ctx.OR()){
+			}else if(n==ctx.AND()||n==ctx.OR()){      //|boolExpr (AND|OR)boolExpr
 				String firstOpType=visit(ctx.getChild(0));
 				String secondOpType=visit(ctx.getChild(2));
 				if(!(firstOpType=="boolean")&&(secondOpType=="boolean")) throw new RuntimeException("you can only use boolean operators on boolean expressions");
 				return "boolean";
 			}
-		} else if (childrenNo == 2 ) {
+		} else if (childrenNo == 2 ) {      //|NOT boolExpr
 			String exprType=visit(ctx.getChild(1));
 			if (exprType!="boolean") throw new RuntimeException("NOT operator works only with boolean expresssions");
 				return "boolean";
-		}else  {
+		}else  {								//|(ID|property|BOOLEANLIT|arrIdExpr|methodCall)
 			ParseTree n=ctx.getChild(0);
 			if (n instanceof TerminalNode) {				
 				if (n==ctx.BOOLEANLIT()) return "boolean";
@@ -93,6 +101,51 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null; //for debug
 	}
 	
+	
+	//property			: 	ID('.'ID)+;
+	@Override
+	public String visitProperty(PropertyContext ctx){
+		int childrenNo=ctx.getChildCount();
+		String classKey=visitTerminal((TerminalNode)ctx.getChild(0));
+		ClassRecord cRec= (ClassRecord) table.lookup(classKey);
+		if (cRec==null) throw new RuntimeException("Class does not exist in propery statement");
+		Record varRec;
+		for (int i=2;i<=childrenNo;i+=2){
+			String varName=visitTerminal((TerminalNode)ctx.getChild(i));
+			varRec=cRec.getVariable(varName);
+			if (varRec==null) throw new RuntimeException(varName+" does not exist in class "+ cRec.getName());
+			else 
+				if(i==childrenNo) return varRec.getReturnType();
+		}
+		return null; //debugging purposes, normally unreachable
+	}
+
+	
+	//arrIdExpr			: 	ID'['(INTEG|ID|property)']';
+	@Override
+	public String visitArrIdExpr(ArrIdExprContext ctx) {
+		String arrKey=visitTerminal((TerminalNode)ctx.getChild(0));
+		Record array=table.lookup(arrKey);
+		if (array==null) throw new RuntimeException("Array "+arrKey+" is not declared");
+		ParseTree indexNode=ctx.getChild(2);
+		if (indexNode instanceof TerminalNode) {
+			if (indexNode!=ctx.INTEG()){
+				if(indexNode==ctx.ID()) {
+					Record varRec= table.lookup(visitTerminal((TerminalNode)indexNode));
+					if (varRec==null)throw new RuntimeException("Variable "+indexNode.getText()+" is not declared");
+					String indexType= varRec.getReturnType();
+					if (indexType!="int") throw new RuntimeException("Array index must be an integer."+ varRec.getName()+" is not");					
+				}
+			}
+			
+		} else {
+			String indexType= visit(indexNode);
+			if (indexType!="int") throw new RuntimeException("Array index must be an integer. Property"
+					+ indexNode.getText()+ " is not");
+			
+		}
+		return array.getReturnType();
+	}
 	@Override 
 	public String visitTerminal(TerminalNode node){		
 		return node.getSymbol().getText();

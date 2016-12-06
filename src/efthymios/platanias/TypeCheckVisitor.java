@@ -1,7 +1,14 @@
 package efthymios.platanias;
 
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import antlr.MJGrammarBaseVisitor;
-import antlr.MJGrammarParser.*;
+import antlr.MJGrammarParser.BoolExprContext;
+import antlr.MJGrammarParser.ClassDeclarationContext;
+import antlr.MJGrammarParser.MethodContext;
+import antlr.MJGrammarParser.PrintStContext;
+import antlr.MJGrammarParser.ReturnStContext;
 
 public class TypeCheckVisitor<String> extends MJGrammarBaseVisitor<String> {
 	
@@ -43,8 +50,32 @@ public class TypeCheckVisitor<String> extends MJGrammarBaseVisitor<String> {
 		return null;
 	}
 	
+	@Override
 	public String visitBoolExpr(BoolExprContext ctx) {
-		
+		int childrenNo=ctx.children.size();
+		if (childrenNo == 3 )
+		{
+			ParseTree n=ctx.getChild(1);			
+			if (!(n instanceof TerminalNode)) visit(n);    //( boolExpr ) 
+			else if(n == ctx.COMP()||n == ctx.EQ()) {
+				String firstOpType=visit(ctx.getChild(0));
+				String secondOpType=visit(ctx.getChild(2));
+				if(!(firstOpType=="int")&&(secondOpType=="int")) throw new RuntimeException("you can only compare integer types");
+			}else if(n==ctx.AND()||n==ctx.OR()){
+				String firstOpType=visit(ctx.getChild(0));
+				String secondOpType=visit(ctx.getChild(2));
+				if(!(firstOpType=="boolean")&&(secondOpType=="boolean")) throw new RuntimeException("")
+			}
+		} else if (childrenNo == 2 ) {
+			
+		}else  {
+			
+		}
+	}
+	
+	@Override 
+	public String visitTerminal(TerminalNode node){
+		return (String) node.getSymbol().getText();
 	}
 	
 	

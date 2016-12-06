@@ -32,7 +32,7 @@ public class MiniJavaMain {
 			System.out.println("Done!");
 			
 		} catch (Exception e) {
-			System.err.println("Could not read file");
+			System.err.println(e.getMessage());
 		}
 	}
 }

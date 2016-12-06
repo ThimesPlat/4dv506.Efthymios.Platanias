@@ -51,7 +51,7 @@ boolExpr			:	LRB boolExpr RRB
 						|arExpr EQ arExpr 
 						|boolExpr (AND|OR)boolExpr
 						|NOT boolExpr
-						|(ID|property|BOOLEANLIT|INTEG|CH|arrIdExpr|methodCall) ;
+						|(ID|property|BOOLEANLIT|arrIdExpr|methodCall) ;
 type				: 	ID|'int'|'String'|'char'|'boolean'|'int' '['(INTEG|ID)?']';
 property			: 	ID('.'ID)+;
 STRING		:  '"' ( ESC_SEQ | ~('\\'|'"') )* '"';

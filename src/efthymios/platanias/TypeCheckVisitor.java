@@ -64,12 +64,14 @@ public class TypeCheckVisitor<String> extends MJGrammarBaseVisitor<String> {
 			}else if(n==ctx.AND()||n==ctx.OR()){
 				String firstOpType=visit(ctx.getChild(0));
 				String secondOpType=visit(ctx.getChild(2));
-				if(!(firstOpType=="boolean")&&(secondOpType=="boolean")) throw new RuntimeException("")
+				if(!(firstOpType=="boolean")&&(secondOpType=="boolean")) throw new RuntimeException("you can only use boolean operators on boolean expressions");
 			}
 		} else if (childrenNo == 2 ) {
+			String exprType=visit(ctx.getChild(1));
+			if (exprType!="boolean") throw new RuntimeException("NOT operator works only with boolean expresssions");
 			
 		}else  {
-			
+			ParseTree 
 		}
 	}
 	

@@ -17,8 +17,8 @@ public class ClassRecord extends Record{
 		return methods.get(name);
 	}
 
-	public void setMethod(String name, MethodRecord method) {
-		methods.put(name, method);
+	public void setMethods(Map<String,MethodRecord> methods) {
+		this.methods = methods ; 
 	}
 
 	public Record getVariable(String Varname) {

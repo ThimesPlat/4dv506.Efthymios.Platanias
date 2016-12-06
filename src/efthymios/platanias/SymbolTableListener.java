@@ -20,17 +20,18 @@ public class SymbolTableListener extends MJGrammarBaseListener {
     public SymbolTableListener(SymbolTable table){
     	this.table = table; 
     }
-    
+    /*
     @Override
 	public void enterProg(ProgContext ctx) {
 		 
-	}
+	}*/
     
     @Override
 	public void enterMainClass(MainClassContext ctx) {
-        //System.out.println("enterMainClass");        
-        ClassRecord classRecord = new ClassRecord(ctx.getChild(1).getText(), ctx.getChild(0).getText());
-        System.out.println(classRecord.toString());
+        //System.out.println("enterMainClass");
+    	// mainClass : 'class' ID LB mainMethod RB;
+        ClassRecord classRecord = new ClassRecord(ctx.getChild(1).getText(), ctx.getChild(1).getText());
+        //System.out.println(classRecord.toString());
         table.put(ctx.getChild(1).getText(), classRecord);  //Place the record of the class into the current scope
         table.enterScope(); //Enter class scope (create new child of current scope)
         Scope classScope = table.getCurrentScope(); //Get entered scope which was created and is current now
@@ -43,10 +44,9 @@ public class SymbolTableListener extends MJGrammarBaseListener {
     
 	@Override
 	public void enterClassDeclaration(ClassDeclarationContext ctx) {
-		//System.out.println("enterClassDeclaration"); 
-		
+		//System.out.println("enterClassDeclaration"); 		
 		Map<String,Record> variables = new HashMap<String,Record>();
-		Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();		
+		Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();	
 		// classDeclaration : 'class' ID LB fieldList methodList RB;
         ClassRecord classRecord = new ClassRecord(ctx.getChild(1).getText(), ctx.getChild(1).getText());
         // Putting variables inside classRecord
@@ -60,11 +60,20 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         classRecord.setVariables(variables);
         // Putting methods inside classRecord        
         for(int i=0; i<ctx.getChild(4).getChildCount(); i++){
-        	String methName = ctx.getChild(4).getChild(i).getChild(1).getText();
-        	String methType = ctx.getChild(4).getChild(i).getChild(0).getChild(0).getText();
-        	variables.put(methName, new Record(methName, methType));
+        	ParseTree curMethod = ctx.getChild(4).getChild(i);
+        	String methName = curMethod.getChild(1).getText();
+        	String methType = curMethod.getChild(0).getChild(0).getText();
+           	MethodRecord methodRecord = new MethodRecord(methName, methType);
+           	// paramList:   (type ID(','type ID)*)? ;            
+   	     	for (int k = 0; k < curMethod.getChild(3).getChildCount(); k += 3) {
+   	    	 Record rec = new Record(curMethod.getChild(3).getChild(k + 1).getText(), curMethod.getChild(3).getChild(k).getChild(0).getText());
+   	    	 methodRecord.setParameter(curMethod.getChild(3).getChild(k + 1).getText(),rec);
+   	         //table.put(ctx.getChild(3).getChild(i + 1).getText(), rec);
+   	     }
+        	methods.put(methName, methodRecord);
         }
-        classRecord.setVariables(variables);
+        
+        classRecord.setMethods(methods);
         System.out.println(classRecord.toString());
         //Place the record of the class into the current scope
         table.put(ctx.getChild(1).getText(), classRecord);
@@ -76,7 +85,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         classScope.setName("class " + ctx.getChild(1).getText());
         //Set the created scope as personal scope of the class entry
         //classRecord.setScope(classScope);
-        classScope.printScope();
+        //classScope.printScope();
         lastClassRecord = classRecord;
         // Declare "this" inside the scope
         table.put("this", new Record("this", ctx.getChild(1).getText()));
@@ -102,10 +111,10 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	    	 Record rec = new Record(name,returnType );
 	         methodRecord.setVariables(name,rec);
 	     }
-	     System.out.println(methodRecord.toString());
+	     //System.out.println(methodRecord.toString());
 	     table.put(ctx.getChild(1).getText(), methodRecord);
 	     //Place the Methodrecord in the last classRecord 
-	     this.lastClassRecord.setMethod(ctx.getChild(1).getText(), methodRecord);
+	     //this.lastClassRecord.setMethods(methodRecord);
 	     //Enter method scope (create new child of current scope)
 	     table.enterScope();
 	     //Get entered scope which was created and is current now

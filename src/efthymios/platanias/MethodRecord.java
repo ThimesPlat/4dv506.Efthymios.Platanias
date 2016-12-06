@@ -2,6 +2,7 @@ package efthymios.platanias;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class MethodRecord extends Record{
@@ -19,9 +20,22 @@ public class MethodRecord extends Record{
 	public void setVariables(String name, Record variable) {
 		variables.put(name, variable);
 	}
-	
+/*	
 	public String toString(){
 		String result= "Method: "+Type+" "+name+"\nVariables:";
+		for(Map.Entry<String, Record> v: variables.entrySet()) 
+			result+="\n\t"+v.getValue().toString();
+		return result;
+	}
+*/
+	public String toString(){
+		String result= "Method: "+Type+" "+name+"\nParameters:";
+		Collection params = getParameters();
+		Iterator<Record> it = params.iterator();		
+		while(it.hasNext()){
+			result+="\n\t"+it.next().toString();
+		}
+		result +="\nVariables:";
 		for(Map.Entry<String, Record> v: variables.entrySet()) 
 			result+="\n\t"+v.getValue().toString();
 		return result;

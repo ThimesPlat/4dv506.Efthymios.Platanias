@@ -10,7 +10,7 @@ import antlr.MJGrammarParser.MethodContext;
 import antlr.MJGrammarParser.PrintStContext;
 import antlr.MJGrammarParser.ReturnStContext;
 
-public class TypeCheckVisitor<String> extends MJGrammarBaseVisitor<String> {
+public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	
 	SymbolTable table= new SymbolTable();
 	
@@ -71,13 +71,20 @@ public class TypeCheckVisitor<String> extends MJGrammarBaseVisitor<String> {
 			if (exprType!="boolean") throw new RuntimeException("NOT operator works only with boolean expresssions");
 			
 		}else  {
-			ParseTree 
+			ParseTree n=ctx.getChild(0);
+			if (n instanceof TerminalNode) {				
+				if (n==ctx.BOOLEANLIT()) return "boolean";
+				else if(n==ctx.ID()){
+					table.lookup(visitTerminal((TerminalNode)n));
+				}
+			 
+			}
 		}
 	}
 	
 	@Override 
 	public String visitTerminal(TerminalNode node){
-		return (String) node.getSymbol().getText();
+		return node.getSymbol().getText();
 	}
 	
 	

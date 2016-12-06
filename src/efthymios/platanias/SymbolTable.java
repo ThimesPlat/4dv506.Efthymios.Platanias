@@ -32,4 +32,6 @@ public class SymbolTable {
 	public Scope getCurrentScope(){
 		return current;
 	}
+
+	
 }

@@ -50,40 +50,51 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null;
 	}
 	
+	
 	@Override
 	public String visitBoolExpr(BoolExprContext ctx) {
 		int childrenNo=ctx.children.size();
 		if (childrenNo == 3 )
 		{
 			ParseTree n=ctx.getChild(1);			
-			if (!(n instanceof TerminalNode)) visit(n);    //( boolExpr ) 
+			if (!(n instanceof TerminalNode)) return visit(n);    //( boolExpr ) 
 			else if(n == ctx.COMP()||n == ctx.EQ()) {
 				String firstOpType=visit(ctx.getChild(0));
 				String secondOpType=visit(ctx.getChild(2));
 				if(!(firstOpType=="int")&&(secondOpType=="int")) throw new RuntimeException("you can only compare integer types");
+				return "boolean";
 			}else if(n==ctx.AND()||n==ctx.OR()){
 				String firstOpType=visit(ctx.getChild(0));
 				String secondOpType=visit(ctx.getChild(2));
 				if(!(firstOpType=="boolean")&&(secondOpType=="boolean")) throw new RuntimeException("you can only use boolean operators on boolean expressions");
+				return "boolean";
 			}
 		} else if (childrenNo == 2 ) {
 			String exprType=visit(ctx.getChild(1));
 			if (exprType!="boolean") throw new RuntimeException("NOT operator works only with boolean expresssions");
-			
+				return "boolean";
 		}else  {
 			ParseTree n=ctx.getChild(0);
 			if (n instanceof TerminalNode) {				
 				if (n==ctx.BOOLEANLIT()) return "boolean";
 				else if(n==ctx.ID()){
-					table.lookup(visitTerminal((TerminalNode)n));
-				}
-			 
+					String key=visitTerminal((TerminalNode)n);
+					Record id= table.lookup(key);
+					if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+					return id.getReturnType();
+					
+				}			 
+			}else {
+				String type=visit(ctx.getChild(0));
+				return type;
 			}
+			
 		}
+		return null; //for debug
 	}
 	
 	@Override 
-	public String visitTerminal(TerminalNode node){
+	public String visitTerminal(TerminalNode node){		
 		return node.getSymbol().getText();
 	}
 	

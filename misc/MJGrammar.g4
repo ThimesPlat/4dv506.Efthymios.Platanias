@@ -19,6 +19,7 @@ statement           :	stmntBlock
 						|assignst|arrAssignSt
 						|methodCall SC|ifST|returnSt
 						|whileSt|breakSt|continueSt|printSt;
+statementList		: statement*;
 printSt             :'System.out.println'LRB arg RRB SC;
 continueSt			: 	'continue' SC;
 breakSt				:	 'break' SC;
@@ -32,7 +33,8 @@ argument:            	arg(','arg)*;
 arg					: 	ID|CH|STRING|expression|methodCall;						
 expression			:	 LRB expression RRB|ID|property|STRING|BOOLEANLIT|stringConcExpr
 						|initExpr|methodCall|arrIdExpr|boolExpr|arExpr;
-method				:	 type ID LRB (type ID(','type ID)*)? RRB LB fieldList (statement)* (returnSt)?RB;
+method				:	 type ID LRB paramList RRB LB fieldList statementList (returnSt)?RB;
+paramList			:   (type ID(','type ID)*)? ;
 methodCall			: 	(ID'.')* ID LRB (argument)?RRB
            				 |(LRB methodCall RRB)'.'methodCall
            				 |methodCall '.' methodCall;           				 

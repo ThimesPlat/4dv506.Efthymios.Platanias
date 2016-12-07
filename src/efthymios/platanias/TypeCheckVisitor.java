@@ -1,6 +1,7 @@
 package efthymios.platanias;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
@@ -201,7 +202,12 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			MethodRecord mRec=cRec.getMethod(ids.pop());
 			if (mRec==null)throw new RuntimeException("Method not declared in class "+cRec.getName());
 			returnType=mRec.getReturnType();
-			//checking
+			//checking arguments 
+			if(argTypes==null) return returnType;
+			else {
+				Collection<Record> parameters=mRec.getParameters();
+				
+			}
 		}
 	}
 	

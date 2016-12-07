@@ -2,6 +2,7 @@ package efthymios.platanias;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -119,7 +120,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		String classKey=visitTerminal((TerminalNode)ctx.getChild(0));
 		ClassRecord cRec= (ClassRecord) table.lookup(classKey);
 		if (cRec==null) throw new RuntimeException("Class does not exist in propery statement");
-		ClassRecord childClass;
+		ClassRecord childClass=null;
 		for (int i=2;i<=childrenNo;i+=2){
 			String varName=visitTerminal((TerminalNode)ctx.getChild(i));
 			if (i<childrenNo) {
@@ -171,15 +172,36 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	public String visitMethodCall(MethodCallContext ctx) {
 		int childrenNo=ctx.children.size();
 		ParseTree lastChild=ctx.children.get(childrenNo-1);
+		String returnType;
 		if(lastChild instanceof TerminalNode){
+			List<String> argTypes=new ArrayList<>();
+			Stack<String> ids=new Stack<>();
 			ParseTree n=ctx.children.get(childrenNo-2);
-			if(!(n instanceof TerminalNode)){
-				List<String> argTypes=new ArrayList<>();
+			if(!(n instanceof TerminalNode)){				
 				for(int i=0;i<=n.getChildCount();i+=2){
 					argTypes.add(visit(n.getChild(i)));
 				}
-				
+			for(int i=childrenNo-4;i>=0;i-=2){
+				ids.push(ctx.getChild(i).getText());
 			}
+			}else{
+				argTypes=null;
+				for(int i=childrenNo-3;i>=0;i-=2){
+					ids.push(ctx.getChild(i).getText());
+				}
+			}
+			int count=ids.size();
+			ClassRecord cRec=null;
+			for(int i=0;i<=count-1;i++){
+				String key=ids.pop();
+				cRec=(ClassRecord) table.lookup(key);
+				if (cRec==null) throw new RuntimeException("Class "+key+" is not declared");				
+			}
+			//last item in stack is the method Identifier
+			MethodRecord mRec=cRec.getMethod(ids.pop());
+			if (mRec==null)throw new RuntimeException("Method not declared in class "+cRec.getName());
+			returnType=mRec.getReturnType();
+			//checking
 		}
 	}
 	

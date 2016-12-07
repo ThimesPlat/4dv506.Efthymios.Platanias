@@ -9,7 +9,6 @@ import antlr.MJGrammarBaseListener;
 import antlr.MJGrammarParser.ClassDeclarationContext;
 import antlr.MJGrammarParser.MainClassContext;
 import antlr.MJGrammarParser.MethodContext;
-import antlr.MJGrammarParser.ProgContext;
  
 public class SymbolTableListener extends MJGrammarBaseListener {
  
@@ -44,7 +43,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         // Putting variables inside classRecord
         // fieldList : (field)* ;
         // field : type ID SC;
-        for(int i=0; i<ctx.getChild(3).getChildCount(); i+=3){
+        for(int i=0; i<ctx.getChild(3).getChildCount(); i+=1){
         	String varName = ctx.getChild(3).getChild(i).getChild(1).getText();
         	String varType = ctx.getChild(3).getChild(i).getChild(0).getText();
         	if(variables.containsKey(varName)){ System.err.println(varType + "\t already exist");}

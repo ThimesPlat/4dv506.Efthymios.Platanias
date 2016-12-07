@@ -12,11 +12,11 @@ public class MiniJavaMain {
 
 	public static void main(String[] args) throws Exception {
 		
-		String testProgram = "C:\\CC1testFiles\\factorial.java";
+		String testProgram = "C:\\test\\quickSort.java";
 		System.out.println("Reading test program from: "+testProgram);
 		
 		try {
-			ANTLRFileStream input = new ANTLRFileStream("C:\\CC1testFiles\\factorial.java");//ANTLRFileStream(args[0]);
+			ANTLRFileStream input = new ANTLRFileStream("C:\\test\\quickSort.java");//ANTLRFileStream(args[0]);
 			MJGrammarLexer lexer = new MJGrammarLexer(input);
 			MJGrammarParser parser = new MJGrammarParser(new BufferedTokenStream(lexer));
 			MJGrammarParser.ProgContext root = parser.prog();

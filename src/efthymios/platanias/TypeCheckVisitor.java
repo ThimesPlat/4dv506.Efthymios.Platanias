@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import antlr.MJGrammarBaseVisitor;
+import antlr.MJGrammarParser.ArExprContext;
 import antlr.MJGrammarParser.ArrIdExprContext;
 import antlr.MJGrammarParser.BoolExprContext;
 import antlr.MJGrammarParser.ClassDeclarationContext;
@@ -17,6 +18,7 @@ import antlr.MJGrammarParser.MethodContext;
 import antlr.MJGrammarParser.PrintStContext;
 import antlr.MJGrammarParser.PropertyContext;
 import antlr.MJGrammarParser.ReturnStContext;
+import antlr.MJGrammarParser.StringConcExprContext;
 
 public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	
@@ -147,7 +149,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		ParseTree indexNode=ctx.getChild(2);
 		if (indexNode instanceof TerminalNode) {
 			if (indexNode!=ctx.INTEG()){
-				if(indexNode==ctx.ID()) {
+				if(indexNode==ctx.ID(1)) { //Check if index is correct (assuming 1=2)
 					Record varRec= table.lookup(visitTerminal((TerminalNode)indexNode));
 					if (varRec==null)throw new RuntimeException("Variable "+indexNode.getText()+" is not declared");
 					String indexType= varRec.getReturnType();
@@ -206,11 +208,83 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			if(argTypes==null) return returnType;
 			else {
 				Collection<Record> parameters=mRec.getParameters();
-				
+				for(Record r: parameters){
+					
+				}
 			}
 		}
 	}
 	
+	
+	@Override
+	public String visitStringConcExpr(StringConcExprContext ctx) {
+		String left = null;
+		String right = null;
+		ParseTree cl = ctx.getChild(0);
+		ParseTree cr = ctx.getChild(2);
+		if(cl ==ctx.STRING()){
+			left = "String";
+		}
+		else if(cl == ctx.ID()){
+			String key=visitTerminal((TerminalNode)cl);
+			Record id= table.lookup(key);
+			if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+			left = id.getReturnType();					
+		}
+		else if(!(cl instanceof TerminalNode)){
+			left = visit(cl);
+		}
+		if(cr ==ctx.STRING()){
+			right = "String";
+		}
+		else if(cr == ctx.ID()){
+			String key=visitTerminal((TerminalNode)cl);
+			Record id= table.lookup(key);
+			if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+			right = id.getReturnType();					
+		}
+		else if(!(cr instanceof TerminalNode)){
+			right = visit(cr);
+		}
+		if(!(right.equals(left) && right.equals("String")) ){throw new RuntimeException("String Concatenation works only with Strings");}
+		return("String");
+	}
+
+	@Override
+	public String visitArExpr(ArExprContext ctx) {
+		int chNo=ctx.children.size();
+		if(chNo == 3){
+			ParseTree cur = ctx.getChild(1);
+			if(cur==ctx.MULT() || cur==ctx.DIV()|| cur==ctx.PLUS() || cur==ctx.MINUS()){
+				String left = visit(ctx.getChild(0));
+				String right = visit(ctx.getChild(2));
+				if(!(right.equals(left) && right.equals("int")) ){throw new RuntimeException("Arithmetic operations only with integers");}
+				return("int");
+			}
+			else{
+				return(visit(cur));
+			}
+		}
+		else{
+			ParseTree cur=ctx.getChild(0);
+			if (cur instanceof TerminalNode) {				
+				if (cur==ctx.INTEG()) return "int";
+				else if (cur==ctx.CH()) return "char";
+				else if(cur==ctx.ID()){
+					String key=visitTerminal((TerminalNode)cur);
+					Record id= table.lookup(key);
+					if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+					return id.getReturnType();					
+				}			 
+			}else {
+				String type=visit(ctx.getChild(0));
+				return type;
+			}
+			
+		}
+		return null;
+	}
+
 	@Override 
 	public String visitTerminal(TerminalNode node){		
 		return node.getSymbol().getText();

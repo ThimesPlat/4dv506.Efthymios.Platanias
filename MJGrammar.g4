@@ -36,7 +36,7 @@ method				:	 type ID LRB paramList RRB LB fieldList statementList (returnSt)?RB;
 paramList			:   (type ID(','type ID)*)? ;
 statementList 		:	(statement)* ;
 
-methodCall			: 	(ID'.')*ID LRB (argument)?RRB
+methodCall			: 	(ID'.')+ ID LRB (argument)?RRB
            				 |(LRB methodCall RRB)'.'methodCall
            				 |methodCall '.' methodCall;
 initExpr			:	 'new' (methodCall|type) ;
@@ -45,7 +45,7 @@ stringConcExpr      :   (STRING|ID|property)PLUS(STRING|ID|property);
 arExpr				:	LRB arExpr RRB 
 						|arExpr(MULT|DIV)arExpr
 						|arExpr(PLUS|MINUS)arExpr
-						|(INTEG|ID|property|CH|STRING|arrIdExpr|methodCall);
+						|(INTEG|ID|property|CH|arrIdExpr|methodCall);
 boolExpr			:	LRB boolExpr RRB
 						|arExpr COMP arExpr
 						|arExpr EQ arExpr 

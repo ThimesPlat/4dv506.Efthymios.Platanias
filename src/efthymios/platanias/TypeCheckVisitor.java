@@ -1,5 +1,8 @@
 package efthymios.platanias;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -7,6 +10,7 @@ import antlr.MJGrammarBaseVisitor;
 import antlr.MJGrammarParser.ArrIdExprContext;
 import antlr.MJGrammarParser.BoolExprContext;
 import antlr.MJGrammarParser.ClassDeclarationContext;
+import antlr.MJGrammarParser.MethodCallContext;
 import antlr.MJGrammarParser.MethodContext;
 import antlr.MJGrammarParser.PrintStContext;
 import antlr.MJGrammarParser.PropertyContext;
@@ -66,10 +70,16 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		{
 			ParseTree n=ctx.getChild(1);			
 			if (!(n instanceof TerminalNode)) return visit(n);    //( boolExpr ) 
-			else if(n == ctx.COMP()||n == ctx.EQ()) {
+			else if(n == ctx.EQ()) {
 				String firstOpType=visit(ctx.getChild(0));    //|arExpr COMP arExpr
-				String secondOpType=visit(ctx.getChild(2));   //|arExpr EQ arExpr
-				if(!(firstOpType=="int")&&(secondOpType=="int")) throw new RuntimeException("you can only compare integer types");
+				String secondOpType=visit(ctx.getChild(2));   
+				if(!((firstOpType=="int")&&(secondOpType=="int"))) throw new RuntimeException("you can only compare integer types");
+				return "boolean";
+			}else if(n==ctx.EQ()){											//|arExpr EQ arExpr
+				String firstOpType=visit(ctx.getChild(0));    
+				String secondOpType=visit(ctx.getChild(2));  				
+				if(!(((firstOpType=="int")&&(secondOpType=="int"))||((firstOpType=="char")&&(secondOpType=="char")))) throw new RuntimeException("you can only use"
+						+ "\"==\" operator on integer or character types");
 				return "boolean";
 			}else if(n==ctx.AND()||n==ctx.OR()){      //|boolExpr (AND|OR)boolExpr
 				String firstOpType=visit(ctx.getChild(0));
@@ -109,13 +119,18 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		String classKey=visitTerminal((TerminalNode)ctx.getChild(0));
 		ClassRecord cRec= (ClassRecord) table.lookup(classKey);
 		if (cRec==null) throw new RuntimeException("Class does not exist in propery statement");
-		Record varRec;
+		ClassRecord childClass;
 		for (int i=2;i<=childrenNo;i+=2){
 			String varName=visitTerminal((TerminalNode)ctx.getChild(i));
-			varRec=cRec.getVariable(varName);
-			if (varRec==null) throw new RuntimeException(varName+" does not exist in class "+ cRec.getName());
-			else 
-				if(i==childrenNo) return varRec.getReturnType();
+			if (i<childrenNo) {
+				childClass=(ClassRecord) table.lookup(varName);
+				if (childClass==null) throw new RuntimeException(varName+" used in  "+ cRec.getName()+ " is not declared");
+			}else 
+				if(i==childrenNo) {
+					Record varRec=childClass.getVariable(varName);
+					if (varRec==null)  throw new RuntimeException("variable "+ varName+" used in  "+ cRec.getName()+ " is not declared");
+					else return varRec.getReturnType();
+				}
 		}
 		return null; //debugging purposes, normally unreachable
 	}
@@ -146,6 +161,28 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		}
 		return array.getReturnType();
 	}
+	
+	
+	/*methodCall			: 	(ID'.')* ID LRB (argument)?RRB
+           				 |(LRB methodCall RRB)'.'methodCall
+           				 |methodCall '.' methodCall; 
+           				 */
+	@Override
+	public String visitMethodCall(MethodCallContext ctx) {
+		int childrenNo=ctx.children.size();
+		ParseTree lastChild=ctx.children.get(childrenNo-1);
+		if(lastChild instanceof TerminalNode){
+			ParseTree n=ctx.children.get(childrenNo-2);
+			if(!(n instanceof TerminalNode)){
+				List<String> argTypes=new ArrayList<>();
+				for(int i=0;i<=n.getChildCount();i+=2){
+					argTypes.add(visit(n.getChild(i)));
+				}
+				
+			}
+		}
+	}
+	
 	@Override 
 	public String visitTerminal(TerminalNode node){		
 		return node.getSymbol().getText();

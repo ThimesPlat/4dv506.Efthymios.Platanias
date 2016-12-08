@@ -32,8 +32,24 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         lastClassRecord = classRecord;
         // Declare "this" inside the scope
         table.put("this", new Record("this", ctx.getChild(1).getText()));
+       
 	}
     
+	@Override
+	public void exitMainClass(MainClassContext ctx) {
+		table.exitScope();
+	}
+
+	@Override
+	public void exitClassDeclaration(ClassDeclarationContext ctx) {
+		table.exitScope();
+	}
+
+	@Override
+	public void exitMethod(MethodContext ctx) {
+		table.exitScope();
+	}
+
 	@Override
 	public void enterClassDeclaration(ClassDeclarationContext ctx) {		
 		Map<String,Record> variables = new HashMap<String,Record>();
@@ -84,7 +100,8 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         // Declare "this" inside the scope
         //table.put("this", new Record("this", ctx.getChild(1).getText()));
         table.put("this", classRecord );
-        // table.printTable();
+        // table.printTable();       
+        
 	}
 
 	@Override
@@ -99,6 +116,8 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	    		System.err.println(ctx.getChild(3).getChild(i + 1).getText() + "\t already exist");
 	     	else
 	     		methodRecord.setParameter(ctx.getChild(3).getChild(i + 1).getText(),rec);
+	    	//adding parameter as variable also
+	    		methodRecord.setVariables(ctx.getChild(3).getChild(i + 1).getText(),rec);
 	     }
 	     // fieldList : (field)* ;
 	     for (int i = 0; i < ctx.getChild(6).getChildCount(); i++) {
@@ -118,6 +137,6 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	     //Get entered scope which was created and is current now
 	     Scope methodScope = table.getCurrentScope();
 	     //Set name of the created scope
-	     methodScope.setName("method " + ctx.getChild(1).getText());
+	     methodScope.setName("method " + ctx.getChild(1).getText());	     
 	}	
 }

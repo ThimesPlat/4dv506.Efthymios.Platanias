@@ -16,7 +16,7 @@ public class MiniJavaMain {
 	
 		
 		try {
-			ANTLRFileStream input = new ANTLRFileStream("C:\\test\\factorial.java");//ANTLRFileStream(args[0]);
+			ANTLRFileStream input = new ANTLRFileStream("C:\\test\\binarytree.java");//ANTLRFileStream(args[0]);
 			MJGrammarLexer lexer = new MJGrammarLexer(input);
 			MJGrammarParser parser = new MJGrammarParser(new BufferedTokenStream(lexer));
 			MJGrammarParser.ProgContext root = parser.prog();

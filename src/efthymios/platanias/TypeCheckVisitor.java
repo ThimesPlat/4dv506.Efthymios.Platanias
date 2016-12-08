@@ -10,9 +10,13 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import antlr.MJGrammarBaseVisitor;
 import antlr.MJGrammarParser.ArExprContext;
+import antlr.MJGrammarParser.ArgContext;
+import antlr.MJGrammarParser.ArrAssignStContext;
 import antlr.MJGrammarParser.ArrIdExprContext;
+import antlr.MJGrammarParser.AssignstContext;
 import antlr.MJGrammarParser.BoolExprContext;
 import antlr.MJGrammarParser.ClassDeclarationContext;
+import antlr.MJGrammarParser.ExpressionContext;
 import antlr.MJGrammarParser.MethodCallContext;
 import antlr.MJGrammarParser.MethodContext;
 import antlr.MJGrammarParser.PrintStContext;
@@ -34,7 +38,6 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	}
 	
 	//method: type ID LRB paramList RRB LB fieldList statementList (returnSt)?RB;
-	
 	@Override 
 	public String visitMethod(MethodContext ctx){
 		table.enterScope();
@@ -46,13 +49,13 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return declaredRetType;
 	}
 	
-	//returnSt: 	'return' expression SC;
+	//returnSt: 'return' expression SC;
 	@Override
 	public String visitReturnSt(ReturnStContext ctx){
 		return visit(ctx.getChild(1));
 	}
 	
-	//printSt:'System.out.println'LRB arg RRB SC;
+	//printSt: 'System.out.println'LRB arg RRB SC;
 	@Override 
 	public String visitPrintSt(PrintStContext ctx) {
 		String argType=visit(ctx.getChild(2));
@@ -60,12 +63,12 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null;
 	}
 	
-	/*boolExpr			:	LRB boolExpr RRB
-							|arExpr COMP arExpr
-							|arExpr EQ arExpr 
-							|boolExpr (AND|OR)boolExpr
-							|NOT boolExpr
-							|(ID|property|BOOLEANLIT|arrIdExpr|methodCall) ;
+	/*boolExpr : LRB boolExpr RRB
+				 |arExpr COMP arExpr
+				 |arExpr EQ arExpr 
+				 |boolExpr (AND|OR)boolExpr
+				 |NOT boolExpr
+				 |(ID|property|BOOLEANLIT|arrIdExpr|methodCall) ;
 	*/
 	@Override
 	public String visitBoolExpr(BoolExprContext ctx) {
@@ -114,9 +117,8 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		}
 		return null; //for debug
 	}
-	
-	
-	//property			: 	ID('.'ID)+;
+		
+	//property : ID('.'ID)+;
 	@Override
 	public String visitProperty(PropertyContext ctx){
 		int childrenNo=ctx.getChildCount();
@@ -138,9 +140,8 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		}
 		return null; //debugging purposes, normally unreachable
 	}
-
 	
-	//arrIdExpr			: 	ID'['(INTEG|ID|property)']';
+	//arrIdExpr : ID'['(INTEG|ID|property)']';
 	@Override
 	public String visitArrIdExpr(ArrIdExprContext ctx) {
 		String arrKey=visitTerminal((TerminalNode)ctx.getChild(0));
@@ -155,8 +156,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 					String indexType= varRec.getReturnType();
 					if (indexType!="int") throw new RuntimeException("Array index must be an integer."+ varRec.getName()+" is not");					
 				}
-			}
-			
+			}			
 		} else {
 			String indexType= visit(indexNode);
 			if (indexType!="int") throw new RuntimeException("Array index must be an integer. Property"
@@ -165,12 +165,11 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		}
 		return array.getReturnType();
 	}
-	
-	
+		
 	/*methodCall			: 	(ID'.')* ID LRB (argument)?RRB
            				 |(LRB methodCall RRB)'.'methodCall
            				 |methodCall '.' methodCall; 
-           				 */
+           				 */	
 	@Override
 	public String visitMethodCall(MethodCallContext ctx) {
 		int childrenNo=ctx.children.size();
@@ -276,7 +275,79 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null; //debuggin purposes. should be unreachable
 	}
 	
+	/*expression : LRB expression RRB | ID | property | STRING | BOOLEANLIT | stringConcExpr
+				  | initExpr | methodCall | arrIdExpr | boolExpr | arExpr;*/
+	@Override
+	public String visitExpression(ExpressionContext ctx) {
+		if(ctx.getChildCount() == 3){
+			return visit(ctx.getChild(1));
+		}
+		ParseTree cur = ctx.getChild(0);
+		if(!(cur instanceof TerminalNode)){
+			return visit(cur);
+		}
+		else if(cur == ctx.ID()){
+			String key=visitTerminal((TerminalNode)cur);
+			Record id= table.lookup(key);
+			if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+			return id.getReturnType();
+		}
+		else if (cur==ctx.BOOLEANLIT()) return "boolean";
+		else if (cur==ctx.STRING()) return "String";
+		return null;
+	}
+
+	//arrAssignSt : ID'['(INTEG|ID|property)']'ASSIGNOP expression SC;
+	@Override
+	public String visitArrAssignSt(ArrAssignStContext ctx) {
+		String key=visitTerminal((TerminalNode)ctx.getChild(0));
+		Record id= table.lookup(key);
+		if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");	
+		if (!id.getReturnType().equals("int[]")) throw new RuntimeException("Identifier "+key+" is not int[]");		
+		ParseTree cur = ctx.getChild(2);
+		String temp = null;
+		if(cur == ctx.INTEG()){
+			temp = "int";
+		}
+		else if(cur == ctx.ID(1)){
+			key=visitTerminal((TerminalNode)cur);
+			id= table.lookup(key);
+			if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+			temp = id.getReturnType();
+		}
+		else{
+			temp = visit(cur);
+		}
+		if(!temp.equals("int"))throw new RuntimeException("Only type int inside ID[]");
+		if(!visit(ctx.getChild(5)).equals("int"))throw new RuntimeException("Only type int assigned on ID[]");
+		return("int");
+	}
+
+	//arg :	ID|CH|STRING|expression|methodCall;	
+	@Override
+	public String visitArg(ArgContext ctx) {
+		String returnType = null;
+		ParseTree cur = ctx.getChild(0);
+		if(cur == ctx.ID()){
+			String key=visitTerminal((TerminalNode)cur);
+			Record id= table.lookup(key);
+			if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+			return id.getReturnType();
+		}
+		else if(cur == ctx.CH()){
+			return ("char");
+		}
+		else if(cur == ctx.STRING()){
+			return ("String");
+		}
+		else{
+			returnType = visit(cur);
+		}
+		return returnType;
+	}
+
 	
+	//stringConcExpr : (STRING|ID|property)PLUS(STRING|ID|property);
 	@Override
 	public String visitStringConcExpr(StringConcExprContext ctx) {
 		String left = null;
@@ -310,6 +381,31 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		if(!(right.equals(left) && right.equals("String")) ){throw new RuntimeException("String Concatenation works only with Strings");}
 		return("String");
 	}
+
+	//assignst : (ID|property) ASSIGNOP expression SC;
+	@Override
+	public String visitAssignst(AssignstContext ctx) {
+		ParseTree cur = ctx.getChild(0);
+		String left = null;
+		String right = null;
+		if(cur == ctx.ID()){
+			String key=visitTerminal((TerminalNode)cur);
+			Record id= table.lookup(key);
+			if (id==null) throw new RuntimeException("Identifier "+key+" is not declared");					
+			left = id.getReturnType();
+		}
+		else {left = visit(cur);}
+		right = visit(ctx.getChild(2));
+		if(right.equals(left)){
+			return right;
+		}
+		else throw new RuntimeException("Not the same type in left and right of Assign");
+	}
+	
+	/*arExpr :	LRB arExpr RRB 
+			   	|arExpr(MULT|DIV)arExpr
+			   	|arExpr(PLUS|MINUS)arExpr
+				|(INTEG|ID|property|CH|arrIdExpr|methodCall);*/
 
 	@Override
 	public String visitArExpr(ArExprContext ctx) {
@@ -350,7 +446,4 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	public String visitTerminal(TerminalNode node){		
 		return node.getSymbol().getText();
 	}
-	
-	
-
 }

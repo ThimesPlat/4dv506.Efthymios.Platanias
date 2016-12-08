@@ -1,7 +1,6 @@
 package efthymios.platanias;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
@@ -17,12 +16,14 @@ import antlr.MJGrammarParser.AssignstContext;
 import antlr.MJGrammarParser.BoolExprContext;
 import antlr.MJGrammarParser.ClassDeclarationContext;
 import antlr.MJGrammarParser.ExpressionContext;
+import antlr.MJGrammarParser.IfSTContext;
 import antlr.MJGrammarParser.MethodCallContext;
 import antlr.MJGrammarParser.MethodContext;
 import antlr.MJGrammarParser.PrintStContext;
 import antlr.MJGrammarParser.PropertyContext;
 import antlr.MJGrammarParser.ReturnStContext;
 import antlr.MJGrammarParser.StringConcExprContext;
+import antlr.MJGrammarParser.WhileStContext;
 
 public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	
@@ -59,7 +60,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	@Override 
 	public String visitPrintSt(PrintStContext ctx) {
 		String argType=visit(ctx.getChild(2));
-		if (!(argType.equals("INTEG")||argType.equals("STRING"))) throw new RuntimeException("Invalid argument in Print Statement");
+		if (!(argType.equals("int")||argType.equals("String"))) throw new RuntimeException("Invalid argument in Print Statement");
 		return null;
 	}
 	
@@ -190,7 +191,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 						if (charArgType!="int") throw new RuntimeException("ARgument i on function charAt(i) must be of type int");
 					}
 					String objectType=table.lookup(ctx.getChild(childrenNo-6).getText()).getReturnType();
-					if (objectType!="String") throw new RuntimeException(".charAt(i) is applicale only to Strings");
+					if (objectType!="String") throw new RuntimeException(".charAt(i) is applicable only to Strings");
 				}
 				for(int i=0;i<=n.getChildCount();i+=2){
 					argTypes.add(visit(n.getChild(i)));
@@ -442,6 +443,28 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null;
 	}
 
+	// whileSt : 'while'LRB boolExpr RRB stmntBlock;
+	@Override 
+	public String visitWhileSt(WhileStContext ctx){
+		String exprType=visit(ctx.getChild(2));
+		if(!(exprType=="boolean")) throw new RuntimeException("expression in while statement must be of type boolean");
+		visit(ctx.getChild(4));
+		return null;
+	}
+	
+	//ifST : 'if'LRB boolExpr RRB statement ('else' statement)?;
+		@Override
+		public String visitIfST(IfSTContext ctx) {
+			String type = visit(ctx.getChild(2));
+			if(!type.equals("boolean")) throw new RuntimeException("Expecting type Boolean in If "+ctx.getChild(2)+" is not boolean");
+			visit(ctx.getChild(4));
+			if(ctx.getChildCount()>5){
+				visit(ctx.getChild(6));
+			}
+			return null;
+		}
+
+	
 	@Override 
 	public String visitTerminal(TerminalNode node){		
 		return node.getSymbol().getText();

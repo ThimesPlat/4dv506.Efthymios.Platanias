@@ -27,8 +27,11 @@ import antlr.MJGrammarParser.WhileStContext;
 
 public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	
-	SymbolTable table= new SymbolTable();
+	public SymbolTable table= new SymbolTable();
 	
+	public TypeCheckVisitor(SymbolTable table) {
+		this.table=table;
+	}
 	//classDeclaration: 'class' ID LB fieldList methodList RB;
 	@Override
 	public String visitClassDeclaration(ClassDeclarationContext ctx){
@@ -181,6 +184,31 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			List<String> argTypes=new ArrayList<>();
 			Stack<String> ids=new Stack<>();
 			ParseTree n=ctx.children.get(childrenNo-2);
+			if (childrenNo<=4){
+				if(!(n instanceof TerminalNode)){
+					methodName=ctx.getChild(childrenNo-4).getText();
+					MethodRecord mRec=(MethodRecord) table.lookup(methodName);
+					if (mRec==null)throw new RuntimeException("method "+methodName+ " is not declared");
+					List<Record> paramList=(List<Record>) mRec.getParameters();
+					List<ParseTree> arguments= new ArrayList<>();
+					for(int i=0;i<=n.getChildCount();i+=2){
+						arguments.add(n.getChild(i));
+					}
+					if(paramList.size()!=arguments.size())throw new RuntimeException("Incorrect number of arguments");
+					else for(int i=0;i<=paramList.size()-1;i++){
+						String actualType=visit(arguments.get(i));
+						String declaredType=paramList.get(i).getReturnType();
+						if(!actualType.equals(declaredType)) throw new RuntimeException("Incorrect argument type");
+					}//checking arguments complete
+					return mRec.getReturnType();
+					} else {
+						methodName=ctx.getChild(childrenNo-3).getText();
+						ClassRecord cRec=(ClassRecord) table.lookup(methodName);
+						MethodRecord mRec=cRec.getMethod(methodName);
+						if (mRec==null)throw new RuntimeException("method "+methodName+ " is not declared");
+						return mRec.getReturnType();
+					}
+			}else 
 			if(!(n instanceof TerminalNode)){
 				methodName=ctx.getChild(childrenNo-4).getText();
 				//checking charAt(i) 
@@ -213,10 +241,9 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			}
 			int count=ids.size();
 			ClassRecord cRec=null;
-			for(int i=0;i<=count-1;i++){
+			for(int i=0;i<=count-2;i++){
 				String key=ids.pop();
-				cRec=(ClassRecord) table.lookup(key);
-				
+				cRec=(ClassRecord) table.lookup(key);				
 				if (cRec==null) throw new RuntimeException("Class "+key+" is not declared");				
 			}
 			//last item in stack is the method Identifier

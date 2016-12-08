@@ -51,6 +51,8 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         		variables.put(varName, new Record(varName, varType));
         }
         classRecord.setVariables(variables);
+        //putting constructor inside classRecord
+        methods.put(ctx.getChild(1).getText(), new MethodRecord(ctx.getChild(1).getText(),ctx.getChild(1).getText()));
         // Putting methods inside classRecord        
         for(int i=0; i<ctx.getChild(4).getChildCount(); i++){
         	ParseTree curMethod = ctx.getChild(4).getChild(i);

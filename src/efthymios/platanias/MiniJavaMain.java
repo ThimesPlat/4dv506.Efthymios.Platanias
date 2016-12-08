@@ -1,5 +1,7 @@
 package efthymios.platanias;
 
+import java.io.FileNotFoundException;
+
 import org.antlr.v4.gui.Trees;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.BufferedTokenStream;
@@ -11,12 +13,10 @@ import antlr.MJGrammarParser;
 public class MiniJavaMain {
 
 	public static void main(String[] args) throws Exception {
-		
-		String testProgram = "C:\\test\\quickSort.java";
-		System.out.println("Reading test program from: "+testProgram);
+	
 		
 		try {
-			ANTLRFileStream input = new ANTLRFileStream("C:\\test\\quickSort.java");//ANTLRFileStream(args[0]);
+			ANTLRFileStream input = new ANTLRFileStream("C:\\test\\factorial.java");//ANTLRFileStream(args[0]);
 			MJGrammarLexer lexer = new MJGrammarLexer(input);
 			MJGrammarParser parser = new MJGrammarParser(new BufferedTokenStream(lexer));
 			MJGrammarParser.ProgContext root = parser.prog();
@@ -30,8 +30,11 @@ public class MiniJavaMain {
 			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 			table.printTable();
 			System.out.println("Done!");
+			System.out.println("Running Type checking...");
+			TypeCheckVisitor typeChecker= new TypeCheckVisitor(table);
+			typeChecker.visit(root);
 			
-		} catch (Exception e) {
+		} catch (FileNotFoundException e) {
 			System.err.println(e.getMessage());
 		}
 	}

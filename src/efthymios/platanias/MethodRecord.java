@@ -1,8 +1,10 @@
 package efthymios.platanias;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class MethodRecord extends Record{
@@ -41,8 +43,12 @@ public class MethodRecord extends Record{
 		return result;
 	}
 	
-	public Collection<Record> getParameters(){
-		return parameters.values();
+	public List<Record> getParameters(){
+		List<Record> result= new ArrayList<>();
+		for(Record r:parameters.values()){
+			result.add(r);
+		}
+		return result;
 	}
 	
 	public void setParameter(String name, Record parameter) {

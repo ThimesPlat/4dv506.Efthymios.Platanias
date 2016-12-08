@@ -11,7 +11,9 @@ public class SymbolTable {
 	}
 	
 	public void enterScope() { 
+		Scope temp=current;
 		current = current.nextChild();
+		current.setParent(temp);
 	}
 	public void exitScope() { 
 		current = current.getParent();

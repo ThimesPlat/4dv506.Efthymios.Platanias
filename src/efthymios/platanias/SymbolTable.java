@@ -15,7 +15,7 @@ public class SymbolTable {
 		current = current.nextChild();
 		current.setParent(temp);
 	}
-	public void exitScope() { 
+	public void exitScope() {		
 		current = current.getParent();
 	}
 	public void put(String key, Record item) { 

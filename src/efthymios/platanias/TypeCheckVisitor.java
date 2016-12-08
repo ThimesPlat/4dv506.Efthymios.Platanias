@@ -81,7 +81,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		{
 			ParseTree n=ctx.getChild(1);			
 			if (!(n instanceof TerminalNode)) return visit(n);    //( boolExpr ) 
-			else if(n == ctx.EQ()) {
+			else if(n.equals(ctx.COMP())) {
 				String firstOpType=visit(ctx.getChild(0));    //|arExpr COMP arExpr
 				String secondOpType=visit(ctx.getChild(2));   
 				if(!((firstOpType=="int")&&(secondOpType=="int"))) throw new RuntimeException("you can only compare integer types");

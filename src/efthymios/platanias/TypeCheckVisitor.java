@@ -176,18 +176,36 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		int childrenNo=ctx.children.size();
 		ParseTree lastChild=ctx.children.get(childrenNo-1);
 		String returnType;
+		String methodName;
 		if(lastChild instanceof TerminalNode){
 			List<String> argTypes=new ArrayList<>();
 			Stack<String> ids=new Stack<>();
 			ParseTree n=ctx.children.get(childrenNo-2);
-			if(!(n instanceof TerminalNode)){				
+			if(!(n instanceof TerminalNode)){
+				methodName=ctx.getChild(childrenNo-4).getText();
+				//checking charAt(i) 
+				if(methodName=="charAt"){
+					if(n.getChildCount()!=1) throw new RuntimeException("Incorrect number of arguments on charAt()function");
+					else {
+						String charArgType=visit(n);		//check argument type is int
+						if (charArgType!="int") throw new RuntimeException("ARgument i on function charAt(i) must be of type int");
+					}
+					String objectType=table.lookup(ctx.getChild(childrenNo-6).getText()).getReturnType();
+					if (objectType!="String") throw new RuntimeException(".charAt(i) is applicale only to Strings");
+				}
 				for(int i=0;i<=n.getChildCount();i+=2){
 					argTypes.add(visit(n.getChild(i)));
 				}
 			for(int i=childrenNo-4;i>=0;i-=2){
 				ids.push(ctx.getChild(i).getText());
 			}
-			}else{
+			}else{ 
+				//checking .length()
+				methodName=ctx.getChild(childrenNo-3).getText();
+				if(methodName=="length"){
+					String objectType=table.lookup(ctx.getChild(childrenNo-5).getText()).getReturnType();
+					if (objectType!="String") throw new RuntimeException(".length() is applicale only to Strings");
+				}
 				argTypes=null;
 				for(int i=childrenNo-3;i>=0;i-=2){
 					ids.push(ctx.getChild(i).getText());
@@ -198,21 +216,64 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			for(int i=0;i<=count-1;i++){
 				String key=ids.pop();
 				cRec=(ClassRecord) table.lookup(key);
+				
 				if (cRec==null) throw new RuntimeException("Class "+key+" is not declared");				
 			}
 			//last item in stack is the method Identifier
 			MethodRecord mRec=cRec.getMethod(ids.pop());
 			if (mRec==null)throw new RuntimeException("Method not declared in class "+cRec.getName());
 			returnType=mRec.getReturnType();
+			if(methodName=="charAt") returnType="char";
+			if(methodName=="length")returnType="int";
 			//checking arguments 
 			if(argTypes==null) return returnType;
-			else {
-				Collection<Record> parameters=mRec.getParameters();
-				for(Record r: parameters){
-					
+			else {				
+				List<Record> parameters=(List<Record>) mRec.getParameters();
+				if(parameters.size()!=argTypes.size()) throw new RuntimeException("Incorect number of arguments on method call");
+				else{
+					for(int i=0;i<=argTypes.size();i++){
+						if(argTypes.get(i)!=(parameters.get(i).getReturnType())) throw new RuntimeException ("incorrect argument type");
+					}
+				}
+			} return returnType;
+		}	else 
+			{
+				if (childrenNo==3){			
+				String leftType=visit(ctx.getChild(0)); //also checks the first method for undeclared ids
+				ParseTree node=ctx.getChild(2);
+				//checking charAt function
+				if((node.getChildCount()==4)&&(node.getChild(3) instanceof TerminalNode)){			
+					if (node.getChild(0).getText()=="charAt"){
+						if (leftType!="String") throw new RuntimeException("charAt() only applicable to Strings");
+						else return visit(node);
+					}
+				}else if(node.getChildCount()==3&&((node.getChild(2) instanceof TerminalNode))){
+					if(node.getChild(0).getText()=="length"){
+						if (leftType!="String") throw new RuntimeException("length() only applicable to Strings");
+						else return visit(node);
+					}
+				}
+				return visit(node); //visit the last methodCall in the chain 
+				}
+				else if (childrenNo==4){
+					String leftType=visit(ctx.getChild(1)); //also checks the first method for undeclared ids
+					ParseTree node=ctx.getChild(4);
+					//checking charAt function
+					if((node.getChildCount()==4)&&(node.getChild(3) instanceof TerminalNode)){			
+						if (node.getChild(0).getText()=="charAt"){
+							if (leftType!="String") throw new RuntimeException("charAt() only applicable to Strings");
+							else return visit(node);
+						}
+					}else if(node.getChildCount()==3&&((node.getChild(2) instanceof TerminalNode))){
+						if(node.getChild(0).getText()=="length"){
+							if (leftType!="String") throw new RuntimeException("length() only applicable to Strings");
+							else return visit(node);
+						}
+					}
+					return visit(node); //visit the last methodCall in the chain 
 				}
 			}
-		}
+		return null; //debuggin purposes. should be unreachable
 	}
 	
 	

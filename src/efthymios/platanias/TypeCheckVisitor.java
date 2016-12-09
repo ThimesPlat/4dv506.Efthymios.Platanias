@@ -17,6 +17,7 @@ import antlr.MJGrammarParser.BoolExprContext;
 import antlr.MJGrammarParser.ClassDeclarationContext;
 import antlr.MJGrammarParser.ExpressionContext;
 import antlr.MJGrammarParser.IfSTContext;
+import antlr.MJGrammarParser.MainClassContext;
 import antlr.MJGrammarParser.MethodCallContext;
 import antlr.MJGrammarParser.MethodContext;
 import antlr.MJGrammarParser.PrintStContext;
@@ -32,6 +33,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	public TypeCheckVisitor(SymbolTable table) {
 		this.table=table;
 	}
+	
 	//classDeclaration: 'class' ID LB fieldList methodList RB;
 	@Override
 	public String visitClassDeclaration(ClassDeclarationContext ctx){
@@ -41,6 +43,15 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null;
 	}
 	
+	//mainClass           : 	'class' ID LB mainMethod RB;
+	@Override
+	public String visitMainClass(MainClassContext ctx) {
+		table.enterScope();
+		visit(ctx.getChild(3));
+		table.exitScope();
+		return null;
+	}
+
 	//method: type ID LRB paramList RRB LB fieldList statementList (returnSt)?RB;
 	@Override 
 	public String visitMethod(MethodContext ctx){

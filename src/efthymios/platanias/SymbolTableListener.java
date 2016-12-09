@@ -137,6 +137,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	     //Get entered scope which was created and is current now
 	     Scope methodScope = table.getCurrentScope();
 	     //Set name of the created scope
-	     methodScope.setName("method " + ctx.getChild(1).getText());	     
+	     methodScope.setName("method " + ctx.getChild(1).getText());	
+	     
 	}	
 }

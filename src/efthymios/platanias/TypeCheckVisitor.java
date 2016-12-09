@@ -95,7 +95,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			else if(n.equals(ctx.COMP())) {
 				String firstOpType=visit(ctx.getChild(0));    //|arExpr COMP arExpr
 				String secondOpType=visit(ctx.getChild(2));   
-				if(!((firstOpType=="int")&&(secondOpType=="int"))) throw new RuntimeException("you can only compare integer types");
+				if(!((firstOpType.equals("int"))&&(secondOpType.equals("int")))) throw new RuntimeException("you can only compare integer types");
 				return "boolean";
 			}else if(n==ctx.EQ()){											//|arExpr EQ arExpr
 				String firstOpType=visit(ctx.getChild(0));    

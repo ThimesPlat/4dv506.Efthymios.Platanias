@@ -16,7 +16,8 @@ public class MiniJavaMain {
 	
 		
 		try {
-			ANTLRFileStream input = new ANTLRFileStream("C:\\test\\binarytree.java");//ANTLRFileStream(args[0]);
+			//ANTLRFileStream input = new ANTLRFileStream("C:\\test\\binarytree.java");//ANTLRFileStream(args[0]);
+			ANTLRFileStream input = new ANTLRFileStream(args[0]);
 			MJGrammarLexer lexer = new MJGrammarLexer(input);
 			MJGrammarParser parser = new MJGrammarParser(new BufferedTokenStream(lexer));
 			MJGrammarParser.ProgContext root = parser.prog();
@@ -26,10 +27,10 @@ public class MiniJavaMain {
 					
 			ParseTreeWalker walker = new ParseTreeWalker();
 			SymbolTable table = new SymbolTable();
-			walker.walk(new SymbolTableListener(table), root);
+			walker.walk(new SymbolTableListener(table), root);/*
 			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 			table.printTable();
-			System.out.println("Done!");
+			System.out.println("Done!");*/
 			System.out.println("Running Type checking...");
 			table.resetTable();
 			TypeCheckVisitor typeChecker= new TypeCheckVisitor(table);

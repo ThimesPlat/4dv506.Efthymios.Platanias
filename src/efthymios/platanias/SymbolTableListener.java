@@ -131,7 +131,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	     for (int i = 0; i < ctx.getChild(6).getChildCount(); i++) {
 	    	 ParseTree curField = ctx.getChild(6).getChild(i);
 	    	 String name = curField.getChild(1).getText(); // name of field 
-	    	 String returnType = curField.getChild(0).getChild(0).getText();  // return type of field
+	    	 String returnType = curField.getChild(0).getText();  // return type of field
 	    	 if( methodRecord.getVariables(name)!=null ||
 	    	     methodRecord.getParameters().contains(name))
 		    		System.err.println(name + "\t already exist");

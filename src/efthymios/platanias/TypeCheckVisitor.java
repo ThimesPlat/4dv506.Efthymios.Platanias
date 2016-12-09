@@ -135,13 +135,20 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		return null; //for debug
 	}
 		
-	//property : ID('.'ID)+;
+	//property : ID('.'ID)+;  wqe.qwe.id.asd.length
 	@Override
 	public String visitProperty(PropertyContext ctx){
 		int childrenNo=ctx.getChildCount();
 		String classKey=visitTerminal((TerminalNode)ctx.getChild(0));
-		ClassRecord cRec= (ClassRecord) table.lookup(classKey);
-		if (cRec==null) throw new RuntimeException("Class does not exist in propery statement");
+		Record temp = table.lookup(classKey);
+		if (temp==null) throw new RuntimeException("Class does not exist in propery statement");
+		if( (!(temp instanceof ClassRecord)) && temp.getReturnType().equals("int[]") ){
+			String next = ctx.getChild(2).getText();
+			if(next.equals("length")){
+				return("int");
+			}
+		}
+		ClassRecord cRec= (ClassRecord) temp;		
 		ClassRecord childClass=null;
 		for (int i=2;i<=childrenNo;i+=2){
 			String varName=visitTerminal((TerminalNode)ctx.getChild(i));

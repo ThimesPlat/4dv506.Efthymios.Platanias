@@ -10,7 +10,7 @@ public class ClassRecord extends Record{
 	Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();
 	
 	public ClassRecord(String name, String returnType){
-		super(name, name);
+		super(name, returnType);
 	}
 
 	public MethodRecord getMethod(String name) {

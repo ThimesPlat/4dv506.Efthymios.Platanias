@@ -254,7 +254,8 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			ClassRecord cRec=null;
 			for(int i=0;i<=count-2;i++){
 				String key=ids.pop();
-				cRec= (ClassRecord)table.lookup(key);				
+				cRec= (ClassRecord)table.lookup(key);	
+				cRec=(ClassRecord)table.lookup(cRec.Type);
 				if (cRec==null) throw new RuntimeException("Class "+key+" is not declared");				
 			}
 			//last item in stack is the method Identifier
@@ -269,8 +270,8 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 				List<VarRecord> parameters=(List<VarRecord>) mRec.getParameters();
 				if(parameters.size()!=argTypes.size()) throw new RuntimeException("Incorect number of arguments on method call");
 				else{
-					for(int i=0;i<=argTypes.size();i++){
-						if(argTypes.get(i)!=(parameters.get(i).getReturnType())) throw new RuntimeException ("incorrect argument type");
+					for(int i=0;i<argTypes.size();i++){
+						if(!argTypes.get(i).equals((parameters.get(i).getReturnType()))) throw new RuntimeException ("incorrect argument type");
 					}
 				}
 			} return returnType;

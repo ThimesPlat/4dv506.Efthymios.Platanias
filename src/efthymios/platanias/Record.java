@@ -19,7 +19,4 @@ public abstract class Record {
 	public String getName() {
 		return name;
 	}
-	
-
-	
 }

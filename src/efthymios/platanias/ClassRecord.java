@@ -6,7 +6,7 @@ import java.util.Map;
 public class ClassRecord extends Record{
 	
 	//Scope scope;
-	Map<String,Record> variables = new HashMap<String,Record>();
+	Map<String,VarRecord> variables = new HashMap<String,VarRecord>();
 	Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();
 	
 	public ClassRecord(String name, String returnType){
@@ -21,22 +21,24 @@ public class ClassRecord extends Record{
 		this.methods = methods ; 
 	}
 
-	public Record getVariable(String Varname) {
+	public VarRecord getVariable(String Varname) {
 		return variables.get(Varname);
 	}
 
-	public void setVariables(Map<String, Record> variables) {
+	public void setVariables(Map<String, VarRecord> variables) {
 		this.variables = variables;
 	}
 	
 	@Override
 	public String toString(){
-		String result= "Class "+ this.name +"\nVariables: \n";
-		for(Map.Entry<String, Record> v: variables.entrySet())
+		String result ="\n~~~~~~~~~~~~~~~~~~ CLASS RECORD ~~~~~~~~~~~~~~~~~~\n\n";
+		result += "Class "+ this.name +"\nVariables:\n";
+		for(Map.Entry<String, VarRecord> v: variables.entrySet())
 			result+=v.getValue().toString()+ "\n" ;
-		result+="\nMethods:\n\t";
+		result+="\nMethods:\n";
 		for(Map.Entry<String,MethodRecord> m: methods.entrySet())
-			result+=m.toString()+"\n\t";
+			result+=m.toString()+"\n";
+		result+="\n~~~~~~~~~~~~~~~~~~ END CLASS RECORD ~~~~~~~~~~~~~~~~~~\n\n";
 		return result;
 	}
 }

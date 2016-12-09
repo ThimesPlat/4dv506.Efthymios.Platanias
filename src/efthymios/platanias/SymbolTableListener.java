@@ -32,7 +32,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         //classScope.printScope();
         lastClassRecord = classRecord;
         // Declare "this" inside the scope
-        table.put("this", new Record("this", ctx.getChild(1).getText()));
+        table.put("this", new VarRecord("this", ctx.getChild(1).getText()));
        
 	}
     
@@ -53,7 +53,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 
 	@Override
 	public void enterClassDeclaration(ClassDeclarationContext ctx) {		
-		Map<String,Record> variables = new HashMap<String,Record>();
+		Map<String,VarRecord> variables = new HashMap<String,VarRecord>();
 		Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();	
 		// classDeclaration : 'class' ID LB fieldList methodList RB;
         ClassRecord classRecord = new ClassRecord(ctx.getChild(1).getText(), ctx.getChild(1).getText());
@@ -65,7 +65,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         	String varType = ctx.getChild(3).getChild(i).getChild(0).getText();
         	if(variables.containsKey(varName)){ System.err.println(varType + "\t already exist");}
         	else
-        		variables.put(varName, new Record(varName, varType));
+        		variables.put(varName, new VarRecord(varName, varType));
         }
         classRecord.setVariables(variables);
         //putting constructor inside classRecord
@@ -78,7 +78,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
            	MethodRecord methodRecord = new MethodRecord(methName, methType);
            	// paramList:   (type ID(','type ID)*)? ;            
    	     	for (int k = 0; k < curMethod.getChild(3).getChildCount(); k += 3) {
-   	     		Record rec = new Record(curMethod.getChild(3).getChild(k + 1).getText(), curMethod.getChild(3).getChild(k).getChild(0).getText());
+   	     		VarRecord rec = new VarRecord(curMethod.getChild(3).getChild(k + 1).getText(), curMethod.getChild(3).getChild(k).getChild(0).getText());
    	     		if(methodRecord.getParameters().contains(curMethod.getChild(3).getChild(k + 1).getText()))
    	     			System.err.println(curMethod.getChild(3).getChild(k + 1).getText() + "\t already exist");
    	     		else
@@ -99,7 +99,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         //Set the created scope as personal scope of the class entry
         lastClassRecord = classRecord;
         // Declare "this" inside the scope
-        table.put("this", new Record("this", ctx.getChild(1).getText()));
+        table.put("this", new VarRecord("this", ctx.getChild(1).getText()));
         //table.put("this", classRecord );
         // table.printTable();       
         
@@ -116,7 +116,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	    	   (methodRecord.getVariables(parname)!=null) )
 	    		 System.err.println(parname + "\t already exist");
 	     	else{
-	     		Record rec = new Record(parname, ctx.getChild(3).getChild(i).getChild(0).getText());
+	     		VarRecord rec = new VarRecord(parname, ctx.getChild(3).getChild(i).getChild(0).getText());
 	     		methodRecord.setParameter(ctx.getChild(3).getChild(i + 1).getText(),rec);
 	     		//adding parameter as variable also
 		    	//methodRecord.setVariables(ctx.getChild(3).getChild(i + 1).getText(),rec);
@@ -131,18 +131,18 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	    	     methodRecord.getParameters().contains(name))
 		    		System.err.println(name + "\t already exist");
 		     else{
-		    	 Record rec = new Record(name,returnType );
+		    	 VarRecord rec = new VarRecord(name,returnType );
 		    	 methodRecord.setVariables(name,rec);
 		     }		    	 
 	     }
 	     table.put(ctx.getChild(1).getText(), methodRecord);
 	     //Enter method scope (create new child of current scope)
 	     table.enterScope();
-	     ArrayList<Record> pars = (ArrayList<Record>) methodRecord.getParameters();
+	     ArrayList<VarRecord> pars = (ArrayList<VarRecord>) methodRecord.getParameters();
 	     for(int i=0; i<pars.size();i++){
 	    	 table.put(pars.get(i).getName(), pars.get(i));
 	     }
-	     for(Map.Entry<String, Record> v: methodRecord.variables.entrySet()){
+	     for(Map.Entry<String, VarRecord> v: methodRecord.variables.entrySet()){
 	    	 table.put(v.getKey(),v.getValue());
 	     }
 	     //table.put(ctx.getChild(1).getText(), methodRecord);

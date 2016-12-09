@@ -215,8 +215,9 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 					}//checking arguments complete
 					return mRec.getReturnType();
 					} else {
+						ClassRecord cRec;
 						methodName=ctx.getChild(childrenNo-3).getText();
-						ClassRecord cRec=(ClassRecord) table.lookup(methodName);
+						cRec=(ClassRecord) table.lookup(methodName);
 						MethodRecord mRec=cRec.getMethod(methodName);
 						if (mRec==null)throw new RuntimeException("method "+methodName+ " is not declared");
 						return mRec.getReturnType();
@@ -320,7 +321,9 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 							else return visit(node);
 						}
 					}
-					return visit(node); //visit the last methodCall in the chain 
+					ClassRecord cR=(ClassRecord)table.lookup(leftType);
+					MethodRecord mRec=cR.getMethod(node.getChild(0).getText());
+					return mRec.getReturnType(); //visit the last methodCall in the chain 
 				}
 			}
 		return null; //debuggin purposes. should be unreachable

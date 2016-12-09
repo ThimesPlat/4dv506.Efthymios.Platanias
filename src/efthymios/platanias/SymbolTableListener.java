@@ -50,12 +50,12 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	public void exitMethod(MethodContext ctx) {
 		table.exitScope();
 	}
-
+	
 	@Override
-	public void enterClassDeclaration(ClassDeclarationContext ctx) {		
-		Map<String,VarRecord> variables = new HashMap<String,VarRecord>();
-		Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();	
+	public void enterClassDeclaration(ClassDeclarationContext ctx) {
 		// classDeclaration : 'class' ID LB fieldList methodList RB;
+		Map<String,VarRecord> variables = new HashMap<String,VarRecord>();
+		Map<String,MethodRecord> methods = new HashMap<String,MethodRecord>();		
         ClassRecord classRecord = new ClassRecord(ctx.getChild(1).getText(), ctx.getChild(1).getText());
         // Putting variables inside classRecord
         // fieldList : (field)* ;
@@ -68,6 +68,8 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         		variables.put(varName, new VarRecord(varName, varType));
         }
         classRecord.setVariables(variables);
+        
+        table.put(ctx.getChild(1).getText(), classRecord);
         //putting constructor inside classRecord
         methods.put(ctx.getChild(1).getText(), new MethodRecord(ctx.getChild(1).getText(),ctx.getChild(1).getText()));
         // Putting methods inside classRecord        
@@ -96,6 +98,9 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         Scope classScope = table.getCurrentScope();
         //Set name of the created scope
         classScope.setName("class " + ctx.getChild(1).getText());
+        for(Map.Entry<String, VarRecord> v: classRecord.variables.entrySet()){
+	    	 table.put(v.getKey(),v.getValue());
+	    }
         //Set the created scope as personal scope of the class entry
         lastClassRecord = classRecord;
         // Declare "this" inside the scope

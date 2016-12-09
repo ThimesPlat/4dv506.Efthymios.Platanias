@@ -100,18 +100,18 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			}else if(n==ctx.EQ()){											//|arExpr EQ arExpr
 				String firstOpType=visit(ctx.getChild(0));    
 				String secondOpType=visit(ctx.getChild(2));  				
-				if(!(((firstOpType=="int")&&(secondOpType=="int"))||((firstOpType=="char")&&(secondOpType=="char")))) throw new RuntimeException("you can only use"
+				if(!(((firstOpType.equals("int"))&&(secondOpType.equals("int")))||((firstOpType.equals("char"))&&(secondOpType.equals("char"))))) throw new RuntimeException("you can only use"
 						+ "\"==\" operator on integer or character types");
 				return "boolean";
 			}else if(n==ctx.AND()||n==ctx.OR()){      //|boolExpr (AND|OR)boolExpr
 				String firstOpType=visit(ctx.getChild(0));
 				String secondOpType=visit(ctx.getChild(2));
-				if(!(firstOpType=="boolean")&&(secondOpType=="boolean")) throw new RuntimeException("you can only use boolean operators on boolean expressions");
+				if(!(firstOpType.equals("boolean"))&&(secondOpType.equals("boolean"))) throw new RuntimeException("you can only use boolean operators on boolean expressions");
 				return "boolean";
 			}
 		} else if (childrenNo == 2 ) {      //|NOT boolExpr
 			String exprType=visit(ctx.getChild(1));
-			if (exprType!="boolean") throw new RuntimeException("NOT operator works only with boolean expresssions");
+			if (!exprType.equals("boolean")) throw new RuntimeException("NOT operator works only with boolean expresssions");
 				return "boolean";
 		}else  {								//|(ID|property|BOOLEANLIT|arrIdExpr|methodCall)
 			ParseTree n=ctx.getChild(0);
@@ -169,16 +169,16 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 					Record varRec= table.lookup(visitTerminal((TerminalNode)indexNode));
 					if (varRec==null)throw new RuntimeException("Variable "+indexNode.getText()+" is not declared");
 					String indexType= varRec.getReturnType();
-					if (indexType!="int") throw new RuntimeException("Array index must be an integer."+ varRec.getName()+" is not");					
+					if (!indexType.equals("int")) throw new RuntimeException("Array index must be an integer."+ varRec.getName()+" is not");					
 				}
 			}			
 		} else {
 			String indexType= visit(indexNode);
-			if (indexType!="int") throw new RuntimeException("Array index must be an integer. Property"
+			if (!indexType.equals("int")) throw new RuntimeException("Array index must be an integer. Property"
 					+ indexNode.getText()+ " is not");
 			
 		}
-		return array.getReturnType();
+		return "int";
 	}
 		
 	/*methodCall			: 	(ID'.')* ID LRB (argument)?RRB
@@ -223,14 +223,14 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			if(!(n instanceof TerminalNode)){
 				methodName=ctx.getChild(childrenNo-4).getText();
 				//checking charAt(i) 
-				if(methodName=="charAt"){
+				if(methodName.equals("charAt")){
 					if(n.getChildCount()!=1) throw new RuntimeException("Incorrect number of arguments on charAt()function");
 					else {
 						String charArgType=visit(n);		//check argument type is int
-						if (charArgType!="int") throw new RuntimeException("ARgument i on function charAt(i) must be of type int");
+						if (!charArgType.equals("int")) throw new RuntimeException("ARgument i on function charAt(i) must be of type int");
 					}
 					String objectType=table.lookup(ctx.getChild(childrenNo-6).getText()).getReturnType();
-					if (objectType!="String") throw new RuntimeException(".charAt(i) is applicable only to Strings");
+					if (!objectType.equals("String")) throw new RuntimeException(".charAt(i) is applicable only to Strings");
 				}
 				for(int i=0;i<=n.getChildCount();i+=2){
 					argTypes.add(visit(n.getChild(i)));
@@ -241,9 +241,9 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			}else{ 
 				//checking .length()
 				methodName=ctx.getChild(childrenNo-3).getText();
-				if(methodName=="length"){
+				if(methodName.equals("length")){
 					String objectType=table.lookup(ctx.getChild(childrenNo-5).getText()).getReturnType();
-					if (objectType!="String") throw new RuntimeException(".length() is applicale only to Strings");
+					if (!objectType.equals("String")) throw new RuntimeException(".length() is applicale only to Strings");
 				}
 				argTypes=null;
 				for(int i=childrenNo-3;i>=0;i-=2){
@@ -262,8 +262,8 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			MethodRecord mRec=cRec.getMethod(ids.pop());
 			if (mRec==null)throw new RuntimeException("Method not declared in class "+cRec.getName());
 			returnType=mRec.getReturnType();
-			if(methodName=="charAt") returnType="char";
-			if(methodName=="length")returnType="int";
+			if(methodName.equals("charAt")) returnType="char";
+			if(methodName.equals("length"))returnType="int";
 			//checking arguments 
 			if(argTypes==null) return returnType;
 			else {				
@@ -283,15 +283,15 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 				ParseTree node=ctx.getChild(2);
 				//checking charAt function
 				if((node.getChildCount()==4)&&(node.getChild(3) instanceof TerminalNode)){			
-					if (node.getChild(0).getText()=="charAt"){
-						if (leftType!="String") throw new RuntimeException("charAt() only applicable to Strings");
+					if (node.getChild(0).getText().equals("charAt")){
+						if (!leftType.equals("String")) throw new RuntimeException("charAt() only applicable to Strings");
 						String argType=visit(node.getChild(2));
-						if (argType!="int") throw new RuntimeException("Incorrect argument in charAt()");
+						if (!argType.equals("int")) throw new RuntimeException("Incorrect argument in charAt()");
 						return "char";
 					}
 				}else if(node.getChildCount()==3&&((node.getChild(2) instanceof TerminalNode))){
-					if(node.getChild(0).getText()=="length"){
-						if (leftType!="String") throw new RuntimeException("length() only applicable to Strings");
+					if(node.getChild(0).getText().equals("length")){
+						if (!leftType.equals("String")) throw new RuntimeException("length() only applicable to Strings");
 						else return "int";
 					}
 				}
@@ -307,13 +307,13 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 					ParseTree node=ctx.getChild(4);
 					//checking charAt function
 					if((node.getChildCount()==4)&&(node.getChild(3) instanceof TerminalNode)){			
-						if (node.getChild(0).getText()=="charAt"){
-							if (leftType!="String") throw new RuntimeException("charAt() only applicable to Strings");
+						if (node.getChild(0).getText().equals("charAt")){
+							if (!leftType.equals("String")) throw new RuntimeException("charAt() only applicable to Strings");
 							else return visit(node);
 						}
 					}else if(node.getChildCount()==3&&((node.getChild(2) instanceof TerminalNode))){
-						if(node.getChild(0).getText()=="length"){
-							if (leftType!="String") throw new RuntimeException("length() only applicable to Strings");
+						if(node.getChild(0).getText().equals("length")){
+							if (!leftType.equals("String")) throw new RuntimeException("length() only applicable to Strings");
 							else return visit(node);
 						}
 					}
@@ -494,7 +494,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	@Override 
 	public String visitWhileSt(WhileStContext ctx){
 		String exprType=visit(ctx.getChild(2));
-		if(!(exprType=="boolean")) throw new RuntimeException("expression in while statement must be of type boolean");
+		if(!(exprType.equals("boolean"))) throw new RuntimeException("expression in while statement must be of type boolean");
 		visit(ctx.getChild(4));
 		return null;
 	}

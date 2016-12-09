@@ -17,7 +17,7 @@ methodList			: 	(method)*;
 field               : 	type ID SC;
 statement           :	stmntBlock
 						|assignst|arrAssignSt
-						|methodCall SC|ifST|returnSt
+						|methodCall SC|ifST
 						|whileSt|breakSt|continueSt|printSt;
 statementList		: statement*;
 printSt             :'System.out.println'LRB arg RRB SC;

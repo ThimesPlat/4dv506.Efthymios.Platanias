@@ -200,7 +200,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 					methodName=ctx.getChild(childrenNo-4).getText();
 					MethodRecord mRec=(MethodRecord) table.lookup(methodName);
 					if (mRec==null)throw new RuntimeException("method "+methodName+ " is not declared");
-					List<Record> paramList=(List<Record>) mRec.getParameters();
+					List<VarRecord> paramList=(List<VarRecord>) mRec.getParameters();
 					List<ParseTree> arguments= new ArrayList<>();
 					for(int i=0;i<=n.getChildCount();i+=2){
 						arguments.add(n.getChild(i));
@@ -266,7 +266,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			//checking arguments 
 			if(argTypes==null) return returnType;
 			else {				
-				List<Record> parameters=(List<Record>) mRec.getParameters();
+				List<VarRecord> parameters=(List<VarRecord>) mRec.getParameters();
 				if(parameters.size()!=argTypes.size()) throw new RuntimeException("Incorect number of arguments on method call");
 				else{
 					for(int i=0;i<=argTypes.size();i++){

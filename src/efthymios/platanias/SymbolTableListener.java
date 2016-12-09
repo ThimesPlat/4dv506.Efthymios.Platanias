@@ -32,7 +32,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         //classScope.printScope();
         lastClassRecord = classRecord;
         // Declare "this" inside the scope
-        table.put("this", new VarRecord("this", ctx.getChild(1).getText()));
+        table.put("this", new ClassRecord("this", ctx.getChild(1).getText()));
        
 	}
     
@@ -99,7 +99,7 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         //Set the created scope as personal scope of the class entry
         lastClassRecord = classRecord;
         // Declare "this" inside the scope
-        table.put("this", new VarRecord("this", ctx.getChild(1).getText()));
+        table.put("this", new ClassRecord("this", ctx.getChild(1).getText()));
         //table.put("this", classRecord );
         // table.printTable();       
         

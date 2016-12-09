@@ -1,6 +1,6 @@
 package efthymios.platanias;
 
-public class Record {
+public abstract class Record {
 	String name;
 	String Type;
 	
@@ -19,10 +19,4 @@ public class Record {
 	public String getName() {
 		return name;
 	}
-	
-	@Override
-	public String toString(){
-		return Type+" "+name;
-	}
-	
 }

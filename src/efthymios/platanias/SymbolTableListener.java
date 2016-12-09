@@ -1,5 +1,6 @@
 package efthymios.platanias;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,8 +99,8 @@ public class SymbolTableListener extends MJGrammarBaseListener {
         //Set the created scope as personal scope of the class entry
         lastClassRecord = classRecord;
         // Declare "this" inside the scope
-        //table.put("this", new Record("this", ctx.getChild(1).getText()));
-        table.put("this", classRecord );
+        table.put("this", new Record("this", ctx.getChild(1).getText()));
+        //table.put("this", classRecord );
         // table.printTable();       
         
 	}
@@ -107,37 +108,47 @@ public class SymbolTableListener extends MJGrammarBaseListener {
 	@Override
 	public void enterMethod(MethodContext ctx) {
 		 // method : type ID LRB paramList RRB LB fieldList statementList (returnSt)?RB;
-	     MethodRecord methodRecord = new MethodRecord(ctx.getChild(1).getText(), ctx.getChild(0).getChild(0).getText());
+	     MethodRecord methodRecord = new MethodRecord(ctx.getChild(1).getText(), ctx.getChild(0).getChild(0).getText());	     
 	     // paramList:   (type ID(','type ID)*)? ;
 	     for (int i = 0; i < ctx.getChild(3).getChildCount(); i += 3) {
-	    	Record rec = new Record(ctx.getChild(3).getChild(i + 1).getText(), ctx.getChild(3).getChild(i).getChild(0).getText());
-	    	if(methodRecord.getParameters().contains(ctx.getChild(3).getChild(i + 1).getText()) || 
-	    	  (methodRecord.getVariables(ctx.getChild(3).getChild(i + 1).getText())!=null) )
-	    		System.err.println(ctx.getChild(3).getChild(i + 1).getText() + "\t already exist");
-	     	else
+	    	 String parname = ctx.getChild(3).getChild(i + 1).getText();    	
+	    	 if(methodRecord.getParameters().contains(parname) || 
+	    	   (methodRecord.getVariables(parname)!=null) )
+	    		 System.err.println(parname + "\t already exist");
+	     	else{
+	     		Record rec = new Record(parname, ctx.getChild(3).getChild(i).getChild(0).getText());
 	     		methodRecord.setParameter(ctx.getChild(3).getChild(i + 1).getText(),rec);
-	    	//adding parameter as variable also
-	    		methodRecord.setVariables(ctx.getChild(3).getChild(i + 1).getText(),rec);
+	     		//adding parameter as variable also
+		    	//methodRecord.setVariables(ctx.getChild(3).getChild(i + 1).getText(),rec);
+	     	}    	
 	     }
 	     // fieldList : (field)* ;
 	     for (int i = 0; i < ctx.getChild(6).getChildCount(); i++) {
 	    	 ParseTree curField = ctx.getChild(6).getChild(i);
 	    	 String name = curField.getChild(1).getText(); // name of field 
 	    	 String returnType = curField.getChild(0).getChild(0).getText();  // return type of field
-	    	 Record rec = new Record(name,returnType );
 	    	 if( methodRecord.getVariables(name)!=null ||
 	    	     methodRecord.getParameters().contains(name))
 		    		System.err.println(name + "\t already exist");
-		     else
+		     else{
+		    	 Record rec = new Record(name,returnType );
 		    	 methodRecord.setVariables(name,rec);
+		     }		    	 
 	     }
 	     table.put(ctx.getChild(1).getText(), methodRecord);
 	     //Enter method scope (create new child of current scope)
 	     table.enterScope();
+	     ArrayList<Record> pars = (ArrayList<Record>) methodRecord.getParameters();
+	     for(int i=0; i<pars.size();i++){
+	    	 table.put(pars.get(i).getName(), pars.get(i));
+	     }
+	     for(Map.Entry<String, Record> v: methodRecord.variables.entrySet()){
+	    	 table.put(v.getKey(),v.getValue());
+	     }
+	     //table.put(ctx.getChild(1).getText(), methodRecord);
 	     //Get entered scope which was created and is current now
 	     Scope methodScope = table.getCurrentScope();
 	     //Set name of the created scope
-	     methodScope.setName("method " + ctx.getChild(1).getText());	
-	     
-	}	
+	     methodScope.setName("method " + ctx.getChild(1).getText());	     
+	}
 }

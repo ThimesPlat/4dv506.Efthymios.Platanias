@@ -263,24 +263,32 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 					}
 				}
 			} return returnType;
-		}	else 
+		}	else 						// last node is a RuleNode
 			{
-				if (childrenNo==3){			
+				if (childrenNo==3){					
 				String leftType=visit(ctx.getChild(0)); //also checks the first method for undeclared ids
+				//ClassRecord cRec=(ClassRecord) table.lookup(ctx.getChild(0).getText());
 				ParseTree node=ctx.getChild(2);
 				//checking charAt function
 				if((node.getChildCount()==4)&&(node.getChild(3) instanceof TerminalNode)){			
 					if (node.getChild(0).getText()=="charAt"){
 						if (leftType!="String") throw new RuntimeException("charAt() only applicable to Strings");
-						else return visit(node);
+						String argType=visit(node.getChild(2));
+						if (argType!="int") throw new RuntimeException("Incorrect argument in charAt()");
+						return "char";
 					}
 				}else if(node.getChildCount()==3&&((node.getChild(2) instanceof TerminalNode))){
 					if(node.getChild(0).getText()=="length"){
 						if (leftType!="String") throw new RuntimeException("length() only applicable to Strings");
-						else return visit(node);
+						else return "int";
 					}
 				}
-				return visit(node); //visit the last methodCall in the chain 
+				{String mName=ctx.getChild(2).getChild(0).getText();
+				ClassRecord tempCR=(ClassRecord) table.lookup(ctx.getChild(0).getChild(0).getText());
+				MethodRecord mRec=tempCR.getMethod(mName);
+				if(mRec==null)throw new RuntimeException("method "+mName+" is not declared in class "+tempCR.getName());
+				return mRec.getReturnType(); //visit the last methodCall in the chain 
+				}
 				}
 				else if (childrenNo==4){
 					String leftType=visit(ctx.getChild(1)); //also checks the first method for undeclared ids
@@ -493,7 +501,8 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 
 	
 	@Override 
-	public String visitTerminal(TerminalNode node){		
+	public String visitTerminal(TerminalNode node){			
+		System.out.print(node.getSymbol().getText());
 		return node.getSymbol().getText();
 	}
 }

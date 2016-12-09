@@ -254,7 +254,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			ClassRecord cRec=null;
 			for(int i=0;i<=count-2;i++){
 				String key=ids.pop();
-				cRec=(ClassRecord) table.lookup(key);				
+				cRec= (ClassRecord)table.lookup(key);				
 				if (cRec==null) throw new RuntimeException("Class "+key+" is not declared");				
 			}
 			//last item in stack is the method Identifier

@@ -17,6 +17,7 @@ import antlr.MJGrammarParser.BoolExprContext;
 import antlr.MJGrammarParser.ClassDeclarationContext;
 import antlr.MJGrammarParser.ExpressionContext;
 import antlr.MJGrammarParser.IfSTContext;
+import antlr.MJGrammarParser.InitExprContext;
 import antlr.MJGrammarParser.MainClassContext;
 import antlr.MJGrammarParser.MethodCallContext;
 import antlr.MJGrammarParser.MethodContext;
@@ -24,6 +25,7 @@ import antlr.MJGrammarParser.PrintStContext;
 import antlr.MJGrammarParser.PropertyContext;
 import antlr.MJGrammarParser.ReturnStContext;
 import antlr.MJGrammarParser.StringConcExprContext;
+import antlr.MJGrammarParser.TypeContext;
 import antlr.MJGrammarParser.WhileStContext;
 
 public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
@@ -252,10 +254,11 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 			}
 			int count=ids.size();
 			ClassRecord cRec=null;
+			Record r;
 			for(int i=0;i<=count-2;i++){
 				String key=ids.pop();
-				cRec= (ClassRecord)table.lookup(key);	
-				cRec=(ClassRecord)table.lookup(cRec.Type);
+				r= table.lookup(key);				
+				cRec=(ClassRecord)table.lookup(r.Type);
 				if (cRec==null) throw new RuntimeException("Class "+key+" is not declared");				
 			}
 			//last item in stack is the method Identifier
@@ -302,7 +305,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 				return mRec.getReturnType(); //visit the last methodCall in the chain 
 				}
 				}
-				else if (childrenNo==4){
+				else if (childrenNo==5){
 					String leftType=visit(ctx.getChild(1)); //also checks the first method for undeclared ids
 					ParseTree node=ctx.getChild(4);
 					//checking charAt function
@@ -444,17 +447,51 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 		}
 		else {left = visit(cur);}
 		right = visit(ctx.getChild(2));
-		if(right.equals(left)){
-			return right;
+		if(right.equals(left)){			
+			return right;			
 		}
 		else throw new RuntimeException("Not the same type in left and right of Assign");
 	}
 	
+	//initExpr			:	 'new' (methodCall|type) ;
+	@Override
+	public String visitInitExpr(InitExprContext ctx) {
+		return visit(ctx.getChild(1));
+	}
+	
+	
+	//type	: 	ID|'int'|'String'|'char'|'boolean'|'int' '['(INTEG|ID)?']';
+	@Override
+	public String visitType(TypeContext ctx) {
+		int childrenNo=ctx.getChildCount();
+		if (childrenNo>1){
+			ParseTree n=ctx.getChild(2);
+			if(n.getText().equals("]"))return "int[]";
+			else if(n == ctx.INTEG()) return "int[]";
+			else if(n==ctx.ID()){
+				Record id=table.lookup(visitTerminal((TerminalNode) n));
+				if (id==null) throw new RuntimeException("Unidentified identifier "+n.getText()+" in array init expression");
+				else if(!id.getReturnType().equals("int")) throw new RuntimeException("Wrong type in array init expression");
+				else return "int[]";
+			}
+				
+		}else {
+		 ParseTree node= ctx.getChild(0);
+		 if (node==ctx.ID()){
+			 Record id=table.lookup(visitTerminal((TerminalNode) node));
+				if (id==null) throw new RuntimeException("Undeclared identifier "+node.getText());
+				return id.getReturnType();
+		 } else {
+			 return visitTerminal((TerminalNode)ctx.getChild(0));
+		 }
+		}
+		return null; //debug
+	}
+
 	/*arExpr :	LRB arExpr RRB 
 			   	|arExpr(MULT|DIV)arExpr
 			   	|arExpr(PLUS|MINUS)arExpr
 				|(INTEG|ID|property|CH|arrIdExpr|methodCall);*/
-
 	@Override
 	public String visitArExpr(ArExprContext ctx) {
 		int chNo=ctx.children.size();
@@ -514,7 +551,7 @@ public class TypeCheckVisitor extends MJGrammarBaseVisitor<String> {
 	
 	@Override 
 	public String visitTerminal(TerminalNode node){			
-		System.out.print(node.getSymbol().getText());
+		System.out.println(node.getSymbol().getText());
 		return node.getSymbol().getText();
 	}
 }
